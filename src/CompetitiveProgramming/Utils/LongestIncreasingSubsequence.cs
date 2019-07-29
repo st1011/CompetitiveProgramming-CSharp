@@ -6,80 +6,85 @@ using System.Threading.Tasks;
 
 namespace CompetitiveProgramming.Utils
 {
-    class LongestIncreasingSubsequence
+    /// <summary>
+    /// 部分列
+    /// 減少を求めたいときは、(Max-input)しておくとか
+    /// </summary>
+    static class Subsequence
     {
-        static List<int> Lis(List<int> nums)
+        /// <summary>
+        /// (狭義)最長増加部分列
+        /// </summary>
+        public static List<T> Lis<T>(IList<T> nums)
+            where T : IComparable<T>
         {
-            var iss = new List<int>
+            if (nums.Count() <= 0) { return new List<T>(); }
+
+            var iss = new List<T> { nums[0] };
+            foreach (var current in nums.Skip(1))
             {
-                nums.FirstOrDefault()
-            };
-            foreach (var n in nums.Skip(1))
-            {
-                if (iss[iss.Count() - 1] < n)
+                if (iss.Last().CompareTo(current) < 0)
                 {
-                    iss.Add(n);
+                    iss.Add(current);
                 }
                 else
                 {
-                    var i = LowerBound<int>(iss, n);
-                    iss[i] = n;
+                    var i = Search.LowerBound(iss, current);
+                    iss[i] = current;
                 }
             }
 
             return iss;
         }
 
-        public static int FindBound<T>(IList<T> list, T v, int start, int end, Func<int, int, bool> judge) where T : IComparable<T>
+        /// <summary>
+        /// 昇順ソート済みリストに対しての二分探索系
+        /// </summary>
+        static class Search
         {
-            int low = start;
-            int high = end;
-
-            if (low > high)
+            /// <summary>
+            /// Bound系の下請け
+            /// </summary>
+            static int FindBound<T>(IList<T> list, T v, int begin, int end, Func<T, T, bool> judge) where T : IComparable<T>
             {
-                throw new ArgumentException();
+                int low = begin, high = end;
+
+                if (low > high) { throw new ArgumentException(); }
+
+                while (low < high)
+                {
+                    var mid = (high + low) / 2;
+
+                    if (judge(v, list[mid])) { high = mid; }
+                    else { low = mid + 1; }
+                }
+
+                return low;
             }
 
-            while (low < high)
-            {
-                var mid = ((high - low) / 2) + low;
-                if (judge(list[mid].CompareTo(v), 0))
-                {
-                    low = mid + 1;
-                }
-                else
-                {
-                    high = mid;
-                }
-            }
+            /// <summary>
+            /// v以上で最小のインデックスを返す
+            /// </summary>
+            public static int LowerBound<T>(IList<T> list, T v, int begin, int end) where T : IComparable<T>
+                => FindBound(list, v, begin, end, (x, y) => x.CompareTo(y) <= 0);
 
-            return low;
-        }
+            /// <summary>
+            /// v以上で最小のインデックスを返す
+            /// </summary>
+            public static int LowerBound<T>(IList<T> list, T v) where T : IComparable<T>
+                => LowerBound<T>(list, v, 0, list.Count());
 
-        /// <summary>
-        /// v以上の最初のインデックスを返す
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="list"></param>
-        /// <param name="v"></param>
-        /// <param name="start"></param>
-        /// <param name="end"></param>
-        /// <returns></returns>
-        public static int LowerBound<T>(IList<T> list, T v, int start, int end) where T : IComparable<T>
-        {
-            return FindBound<T>(list, v, start, end, (x, y) => x < y);
-        }
+            /// <summary>
+            /// vより大きな最小のインデックスを返す
+            /// </summary>
+            public static int UpperBound<T>(IList<T> list, T v, int begin, int end) where T : IComparable<T>
+                => FindBound(list, v, begin, end, (x, y) => x.CompareTo(y) < 0);
 
-        /// <summary>
-        /// v以上の最初のインデックスを返す
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="list"></param>
-        /// <param name="v"></param>
-        /// <returns></returns>
-        public static int LowerBound<T>(IList<T> list, T v) where T : IComparable<T>
-        {
-            return LowerBound<T>(list, v, 0, list.Count());
+            /// <summary>
+            /// vより大きな最小のインデックスを返す
+            /// </summary>
+            public static int UpperBound<T>(IList<T> list, T v) where T : IComparable<T>
+                => UpperBound(list, v, 0, list.Count());
         }
     }
 }
