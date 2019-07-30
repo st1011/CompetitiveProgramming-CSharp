@@ -10,15 +10,14 @@ namespace CompetitiveProgramming.Utils
     /// 部分列
     /// 減少を求めたいときは、(Max-input)しておくとか
     /// </summary>
-    static class Subsequence
+    static class Lis
     {
         /// <summary>
-        /// (狭義)最長増加部分列
+        /// 最長(狭義単調)増加部分列の長さ
         /// </summary>
-        public static List<T> Lis<T>(IList<T> nums)
-            where T : IComparable<T>
+        public static int NarrowLength<T>(IList<T> nums) where T : IComparable<T>
         {
-            if (nums.Count() <= 0) { return new List<T>(); }
+            if (nums.Count() <= 0) { return 0; }
 
             var iss = new List<T> { nums[0] };
             foreach (var current in nums.Skip(1))
@@ -34,12 +33,47 @@ namespace CompetitiveProgramming.Utils
                 }
             }
 
-            return iss;
+            return iss.Count();
         }
 
         /// <summary>
-        /// 昇順ソート済みリストに対しての二分探索系
+        /// 最長(広義単調)増加部分列の長さ
         /// </summary>
+        public static int BroadLength<T>(IList<T> nums, Func<T, T> increment)
+            where T : IComparable<T>
+        {
+            if (nums.Count() <= 0) { return 0; }
+
+            var dss = new List<T>();
+            foreach (var current in nums.Skip(1))
+            {
+                var r = Search.LowerBound(dss, increment(current));
+                if (dss.Count() <= r)
+                {
+                    dss.Add(current);
+                }
+                else
+                {
+                    dss[r] = current;
+                }
+            }
+
+            return dss.Count();
+        }
+
+        #region LDS Sample
+        /// <summary>
+        /// 最長(狭義単調)減少部分列の長さ
+        /// </summary>
+        public static int LdsNarrowLength<T>(IList<T> nums, Func<T, T> reverse)
+            where T : IComparable<T>
+        {
+            var numsRev = nums.Select(x => reverse(x)).ToArray();
+
+            return NarrowLength(numsRev);
+        }
+        #endregion
+
         static class Search
         {
             /// <summary>
