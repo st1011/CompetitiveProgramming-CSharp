@@ -8,6 +8,7 @@ namespace CompetitiveProgramming.Utils
 {
     /// <summary>
     /// 最大二部マッチング
+    /// シンプル版だけど、遅い
     /// </summary>
     class BipartiteMaximumMatching
     {
