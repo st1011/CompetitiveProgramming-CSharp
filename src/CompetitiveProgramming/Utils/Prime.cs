@@ -4,35 +4,30 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+/// <summary>
+/// 素数判定: http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ALDS1_1_C&lang=jp
+/// 素因数分解: http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=NTL_1_A&lang=jp
+/// 素数列挙: http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=0044
+/// オイラーのファイ関数: http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=NTL_1_D&lang=jp
+/// ルジャンドルの公式: 
+/// </summary>
 namespace CompetitiveProgramming.Utils
 {
     /// <summary>
     /// 素数判定
     /// 素因数分解
     /// 素数列挙（エラトステネスの篩）
-    /// 約数列挙
     /// </summary>
     static class Prime
     {
         /// <summary>
-        /// 素数か
+        /// 素数判定
         /// </summary>
-        /// <param name="x"></param>
-        /// <returns></returns>
         public static bool IsPrime(long x)
         {
-            if (x < 2)
-            {
-                return false;
-            }
-            if (x == 2)
-            {
-                return true;
-            }
-            if ((x % 2) == 0)
-            {
-                return false;
-            }
+            if (x < 2) return false;
+            if (x == 2) return true;
+            if ((x % 2) == 0) return false;
 
             long rx = (long)(Math.Sqrt(x) + 1);
             for (long n = 3; n < rx; n += 2)
@@ -49,9 +44,7 @@ namespace CompetitiveProgramming.Utils
         /// <summary>
         /// 素数判定リスト
         /// </summary>
-        /// <param name="n"></param>
-        /// <returns></returns>
-        public static bool[] PrimeSieve(int n)
+        public static bool[] Sieve(int n)
         {
             // Sieve of Eratosthenes
             var sieve = Enumerable.Repeat<bool>(true, n + 1).ToArray();
@@ -77,13 +70,11 @@ namespace CompetitiveProgramming.Utils
         }
 
         /// <summary>
-        /// 素数リスト
+        /// n以下の素数リスト
         /// </summary>
-        /// <param name="n"></param>
-        /// <returns></returns>
-        public static IEnumerable<int> PrimeList(int n)
+        public static IEnumerable<int> List(int n)
         {
-            var sieve = PrimeSieve(n);
+            var sieve = Sieve(n);
 
             return sieve.Select((x, i) => new { X = x, I = i })
                 .Where(x => x.X)
@@ -92,100 +83,49 @@ namespace CompetitiveProgramming.Utils
 
         /// <summary>
         /// 素因数分解
+        /// Item1の素数がItem2個含まれている
         /// </summary>
-        /// <param name="n"></param>
-        /// <returns></returns>
-        public static IEnumerable<long> PrimeFactors(long n)
+        public static IEnumerable<Tuple<long, int>> Factorization(long n)
         {
-            var m = n;
-            var m2 = (long)Math.Sqrt(m) + 1;
-            var p = 2;
+            for (long p = 2; p * p <= n; p++)
+            {
+                int count = 0;
+                while (n % p == 0)
+                {
+                    count++;
+                    n /= p;
+                }
 
-            while (p < m2)
-            {
-                if ((m % p) == 0)
-                {
-                    m /= p;
-                    m2 = (long)Math.Sqrt(m) + 1;
-                    yield return p;
-                }
-                else
-                {
-                    p++;
-                }
+                if (count != 0) yield return new Tuple<long, int>(p, count);
             }
-            if (m > 1)
-            {
-                yield return m;
-            }
+
+            if (n > 1) yield return new Tuple<long, int>(n, 1);
         }
 
         /// <summary>
-        /// n以下でnと互いに素な数の個数
+        /// nと互いに素でn以下である自然数の個数
         /// オイラーのファイ関数
         /// </summary>
-        /// <param name="n"></param>
-        /// <returns></returns>
-        public static long PrimeCount(long n)
+        public static long CoprimeCount(long n)
         {
-            var primes = PrimeFactors(n).Distinct();
+            var primes = Factorization(n);
 
-            var dsum = new decimal(1);
-            foreach (var p in primes)
-            {
-                var pp = new decimal(p);
-
-                dsum *= 1 - (1 / pp);
-            }
-
-            return (long)Math.Round(dsum * n);
+            return primes.Aggregate(n, (t, u) => t - t / u.Item1);
         }
 
         /// <summary>
-        /// 約数列挙 順番はバラバラなので注意！
+        /// ルジャンドルの公式
+        /// n!をpで何回割り切れるか(pは素数)
         /// </summary>
-        /// <param name="n"></param>
-        /// <returns></returns>
-        public static IEnumerable<long> Divisors(long n)
+        public static long Legendres(long n, long p)
         {
-            if (n < 1)
+            long count = 0;
+            for (long m = p; m < n; m *= p)
             {
-                yield break;
+                count += n / m;
             }
 
-            var rn = (int)(Math.Sqrt(n) + 1);
-            for (long i = 1; i < rn; i++)
-            {
-                if ((n % i) == 0)
-                {
-                    yield return i;
-
-                    if (i != (n / i))
-                    {
-                        yield return n / i;
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// 約数列挙 昇順にソート
-        /// </summary>
-        /// <param name="n"></param>
-        /// <param name="needsSort"></param>
-        /// <returns></returns>
-        public static IEnumerable<long> Divisors(long n, bool needsSort)
-        {
-            var divs = Divisors(n);
-
-            if (needsSort)
-            {
-                return divs.OrderBy(x => x);
-            }
-            else
-            {
-                return divs;
-            }
+            return count;
         }
     }
 }

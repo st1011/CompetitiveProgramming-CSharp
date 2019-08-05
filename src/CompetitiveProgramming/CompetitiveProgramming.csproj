@@ -47,6 +47,7 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utils\Divisor.cs" />
     <Compile Include="Utils\BinaryIndexedTree.cs" />
     <Compile Include="Utils\BipartiteMaximumMatching.cs" />
     <Compile Include="Utils\RollingHash.cs" />
@@ -62,7 +63,7 @@
     <Compile Include="Utils\LongestPath.cs" />
     <Compile Include="Utils\MinimumSpanningTree.cs" />
     <Compile Include="Utils\ModInt.cs" />
-    <Compile Include="Utils\Number.cs" />
+    <Compile Include="Utils\GcdLcm.cs" />
     <Compile Include="Utils\Pair.cs" />
     <Compile Include="Utils\Permutation.cs" />
     <Compile Include="Utils\Prime.cs" />
