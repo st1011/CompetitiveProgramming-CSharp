@@ -83,10 +83,11 @@ namespace CompetitiveProgramming.Utils
 
         /// <summary>
         /// 素因数分解
-        /// Item1の素数がItem2個含まれている
+        /// 素数(Key)がValue個ある
         /// </summary>
-        public static IEnumerable<Tuple<long, int>> Factorization(long n)
+        public static Dictionary<long, int> Factorization(long n)
         {
+            var map = new Dictionary<long, int>();
             for (long p = 2; p * p <= n; p++)
             {
                 int count = 0;
@@ -96,11 +97,22 @@ namespace CompetitiveProgramming.Utils
                     n /= p;
                 }
 
-                if (count != 0) yield return new Tuple<long, int>(p, count);
+                if (count != 0) map.Add(p, count);
             }
 
-            if (n > 1) yield return new Tuple<long, int>(n, 1);
+            if (n > 1) map.Add(n, 1);
+
+            return map;
         }
+
+        /// <summary>
+        /// 素因数分解
+        /// 素数をならした配列
+        /// </summary>
+        public static long[] FactorizationFlat(long n)
+            => Factorization(n)
+            .SelectMany(x => Enumerable.Repeat(x.Key, x.Value))
+            .ToArray();
 
         /// <summary>
         /// nと互いに素でn以下である自然数の個数
@@ -110,7 +122,7 @@ namespace CompetitiveProgramming.Utils
         {
             var primes = Factorization(n);
 
-            return primes.Aggregate(n, (t, u) => t - t / u.Item1);
+            return primes.Aggregate(n, (t, u) => t - t / u.Key);
         }
 
         /// <summary>
