@@ -5,40 +5,29 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+/// <summary>
+/// 重複組み合わせ: https://atcoder.jp/contests/abc021/tasks/abc021_d
+/// </summary>
 namespace CompetitiveProgramming.Utils
 {
     /// <summary>
     /// Mを法とする数値
+    /// Mは素数
     /// </summary>
-    struct ModInt
+    public struct ModInt
     {
-        public static int M { get; private set; }
-        private static bool mIsPrime;
-        private static int[] factorials;
-        private static int[] invs;
-        private static int[] finvs;
-
+        public readonly int M;
         private readonly int N;
 
-        static ModInt()
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="n">実際の数値</param>
+        /// <param name="mod">M</param>
+        public ModInt(int n, int mod = (int)1e9 + 7)
         {
-            ModInt.Init();
-        }
-
-        public static void Init(int mod = (int)1e9 + 7)
-        {
-            ModInt.M = mod;
-            ModInt.mIsPrime = IsPrime(mod);
-
-            ModInt.factorials = Enumerable.Repeat<int>(1, 2).ToArray();
-            ModInt.invs = Enumerable.Repeat<int>(1, 2).ToArray();
-            ModInt.finvs = Enumerable.Repeat<int>(1, 2).ToArray();
-        }
-
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        public ModInt(int n)
-        {
-            this.N = n % M;
+            N = n % mod;
+            M = mod;
         }
 
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
@@ -46,30 +35,27 @@ namespace CompetitiveProgramming.Utils
             => a.N;
 
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        public static implicit operator ModInt(int a)
-            => new ModInt(a);
+        public static ModInt Add(int a, int b, int M)
+            => new ModInt((a + b) % M, M);
 
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        public static int Add(int a, int b)
-            => (a + b) % M;
+        public static ModInt Sub(int a, int b, int M)
+            => new ModInt((a + M - b) % M, M);
 
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        public static int Sub(int a, int b)
-            => (a + M - b) % M;
+        public static ModInt Mul(int a, int b, int M)
+            => new ModInt((int)(((long)(a % M) * (b % M)) % M), M);
 
+        /// <summary> a/b </summary>
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        public static int Mul(int a, int b)
-            => (int)(((long)(a % M) * (b % M)) % M);
-
+        public static ModInt Div(int a, int b, int M)
+            => Mul(a, Inverse(b, M), M);
 
         /// <summary>
         /// aの逆元（a^-1）
-        /// Mとaが互いに素である必要があるが
-        /// 大抵Mが素数でa<Mなのでチェックしない
+        /// （厳密には違うが）Mは素数とする
         /// </summary>
-        /// <param name="a"></param>
-        /// <returns></returns>
-        public static int Inverse(int a)
+        public static ModInt Inverse(int a, int M)
         {
             int b = M;
             int u = 1, v = 0;
@@ -86,205 +72,106 @@ namespace CompetitiveProgramming.Utils
             u %= M;
             if (u < 0) u += M;
 
-            return u;
+            return new ModInt(u, M);
         }
 
-        /// <summary>
-        /// a/b
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
-        public static int Div(int a, int b)
-        {
-            // 厳密には条件違うけど、逆元を求めさせるときは大抵Mは素数なので……
-            if (!mIsPrime)
-            {
-                throw new ArgumentException();
-            }
-
-            return Mul(a, Inverse(b));
-        }
-
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        public static ModInt operator +(ModInt a, ModInt b)
-            => new ModInt(Add(a.N, b.N));
-
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        public static ModInt operator -(ModInt a, ModInt b)
-            => new ModInt(Sub(a.N, b.N));
-
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        public static ModInt operator *(ModInt a, ModInt b)
-            => new ModInt(Mul(a.N, b.N));
-
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        public static ModInt operator /(ModInt a, ModInt b)
-            => new ModInt(Div(a.N, b.N));
-
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        public static ModInt operator +(ModInt a, int b)
-            => new ModInt(Add(a.N, b));
-
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        public static ModInt operator -(ModInt a, int b)
-            => new ModInt(Sub(a.N, b));
-
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        public static ModInt operator *(ModInt a, int b)
-            => new ModInt(Mul(a.N, b));
-
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        public static ModInt operator /(ModInt a, int b)
-            => new ModInt(Div(a.N, b));
-
-        public override string ToString()
-        {
-            return this.N.ToString();
-        }
+        public override string ToString() => N.ToString();
 
         /// <summary>
         /// x^y
-        /// 繰り返し二乗法（バイナリ）
+        /// 繰り返し二乗法
         /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <returns></returns>
-        public static int Power(int x, int y)
+        public static ModInt Power(int a, int b, int M)
         {
-            var r = 1;
+            var r = new ModInt(1, M);
 
-            while (y > 0)
+            while (b > 0)
             {
-                if ((y & 1) != 0)
-                {
-                    r = Mul(r, x);
-                }
-                x = Mul(x, x);
+                if ((b & 1) != 0) r = Mul(r, a, M);
 
-                y >>= 1;
+                a = Mul(a, a, M);
+                b >>= 1;
             }
 
             return r;
         }
 
+        #region Operator, Alias
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        public static ModInt Power(ModInt x, ModInt y)
-            => new ModInt(Power(x.N, y.N));
+        public static ModInt operator +(ModInt a, int b)
+            => Add(a, b, a.M);
 
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        public ModInt Power(ModInt y)
-            => new ModInt(Power(this, y));
+        public static ModInt operator -(ModInt a, int b)
+            => Sub(a, b, a.M);
 
-        #region nCr
-        /// <summary>
-        /// a以下の階乗のテーブルを作成する
-        /// </summary>
-        /// <param name="a"></param>
-        static void FactTable(int a)
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        public static ModInt operator *(ModInt a, int b)
+            => Mul(a, b, a.M);
+
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        public static ModInt operator /(ModInt a, int b)
+            => Div(a, b, a.M);
+
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        public static ModInt operator +(int a, ModInt b)
+            => Add(a, b, b.M);
+
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        public static ModInt operator -(int a, ModInt b)
+            => Sub(a, b, b.M);
+
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        public static ModInt operator *(int a, ModInt b)
+            => Mul(a, b, b.M);
+
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        public static ModInt operator /(int a, ModInt b)
+            => Div(a, b, b.M);
+
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        public static ModInt operator +(ModInt a, ModInt b)
         {
-            if (a >= factorials.Length)
-            {
-                int begin = factorials.Length;
-
-                Array.Resize(ref factorials, a + 1);
-
-                for (int i = begin; i <= a; i++)
-                {
-                    factorials[i] = Mul(factorials[i - 1], i);
-                }
-            }
+            if (a.M != b.M) throw new ArgumentException();
+            return Add(a, b, a.M);
         }
 
-        /// <summary>
-        /// a以下の逆元テーブルを作成する
-        /// </summary>
-        /// <param name="a"></param>
-        static void InvTable(int a)
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        public static ModInt operator -(ModInt a, ModInt b)
         {
-            if (a >= invs.Length)
-            {
-                int begin = invs.Length;
-
-                Array.Resize(ref invs, a + 1);
-
-                for (int i = begin; i <= a; i++)
-                {
-                    invs[i] = M - Mul(invs[M % i], M / i);
-                }
-            }
+            if (a.M != b.M) throw new ArgumentException();
+            return Sub(a, b, a.M);
         }
 
-        /// <summary>
-        /// a以下の階乗の逆元テーブルを作成する
-        /// </summary>
-        /// <param name="a"></param>
-        static void FinvTable(int a)
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        public static ModInt operator *(ModInt a, ModInt b)
         {
-            if (a >= finvs.Length)
-            {
-                int begin = finvs.Length;
-
-                Array.Resize(ref finvs, a + 1);
-
-                for (int i = begin; i <= a; i++)
-                {
-                    finvs[i] = Mul(finvs[i - 1], invs[i]);
-                }
-            }
+            if (a.M != b.M) throw new ArgumentException();
+            return Mul(a, b, a.M);
         }
 
-        /// <summary>
-        /// nCr
-        /// </summary>
-        /// <param name="n"></param>
-        /// <param name="r"></param>
-        /// <returns></returns>
-        public static int Ncr(int n, int r)
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        public static ModInt operator /(ModInt a, ModInt b)
         {
-            if (n == r) return 1;
+            if (a.M != b.M) throw new ArgumentException();
+            return Div(a, b, a.M);
+        }
 
-            if (factorials.Length <= n) FactTable(n);
-            if (invs.Length <= n) InvTable(n);
-            if (finvs.Length <= n) FinvTable(n);
+        /// <summary> a^b </summary>
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        public static ModInt Power(ModInt a, int b)
+            => Power(a, b, a.M);
 
-            return Mul(factorials[n], Mul(finvs[r], finvs[n - r]));
+        /// <summary> a^b </summary>
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        public static ModInt Power(ModInt a, ModInt b)
+        {
+            if (a.M != b.M) throw new ArgumentException();
+            return Power(a, b, a.M);
         }
         #endregion
 
         #region Misc
-        /// <summary>
-        /// 素数か
-        /// </summary>
-        /// <param name="x"></param>
-        /// <returns></returns>
-        static bool IsPrime(long x)
-        {
-            if (x < 2)
-            {
-                return false;
-            }
-            if (x == 2)
-            {
-                return true;
-            }
-            if ((x % 2) == 0)
-            {
-                return false;
-            }
-
-            long rx = (long)(Math.Sqrt(x) + 1);
-            for (long n = 3; n < rx; n += 2)
-            {
-                if ((x % n) == 0)
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         static void Swap<T>(ref T a, ref T b)
         {
@@ -293,5 +180,79 @@ namespace CompetitiveProgramming.Utils
             b = temp;
         }
         #endregion
+    }
+
+    /// <summary>
+    /// Mを法とする数値によるCombinationなど
+    /// Mは素数
+    /// </summary>
+    public class ModCom
+    {
+        public readonly int M;
+        // 階乗テーブル
+        private int[] factorials;
+        // 逆元テーブル
+        private int[] invs;
+        // 階乗の逆元テーブル
+        private int[] finvs;
+
+        public ModCom(int mod = (int)1e9 + 7)
+        {
+            M = mod;
+
+            factorials = Enumerable.Repeat(1, 2).ToArray();
+            invs = Enumerable.Repeat(1, 2).ToArray();
+            finvs = Enumerable.Repeat(1, 2).ToArray();
+        }
+
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        int Mul(int a, int b)
+            => (int)(((long)(a % M) * (b % M)) % M);
+
+        /// <summary>
+        /// n以下の各テーブルを作成する
+        /// </summary>
+        void MakeTable(int n)
+        {
+            int begin = factorials.Length;
+            if (n < begin) return;
+
+            Array.Resize(ref factorials, n + 1);
+            Array.Resize(ref invs, n + 1);
+            Array.Resize(ref finvs, n + 1);
+
+            for (int i = begin; i <= n; i++)
+            {
+                factorials[i] = Mul(factorials[i - 1], i);
+                invs[i] = M - Mul(invs[M % i], M / i);
+                finvs[i] = Mul(finvs[i - 1], invs[i]);
+            }
+        }
+
+        /// <summary>
+        /// 順列(nPr)
+        /// </summary>
+        public int Npr(int n, int r)
+        {
+            if (n < r) return 0;
+            if (n < 0 || r < 0) return 0;
+
+            MakeTable(n);
+
+            return Mul(factorials[n], finvs[n - r]);
+        }
+
+        /// <summary>
+        /// 組み合わせ(nCr)
+        /// </summary>
+        public int Ncr(int n, int r)
+            => Mul(Npr(n, r), finvs[r]);
+
+        /// <summary>
+        /// 重複組み合わせ(nHr)
+        /// n個から重複を許してr個取り出す
+        /// </summary>
+        public int Nhr(int n, int r)
+            => Ncr(n + r - 1, r);
     }
 }
