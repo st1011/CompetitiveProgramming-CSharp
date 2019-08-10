@@ -4,21 +4,25 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+/// <summary>
+/// 最大フロー: http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=GRL_6_A&lang=jp
+/// 二部最大マッチング: https://atcoder.jp/contests/abc091/tasks/arc092_a
+/// </summary>
 namespace CompetitiveProgramming.Utils
 {
     /// <summary>
-    /// 最大フローを求める
-    /// 応用：2部最大マッチング
+    /// 最大フロー(Dinic法)
+    /// 応用：二部最大マッチング
     /// </summary>
-    class Dinic
+    class MaxFlow
     {
         static readonly int INF = int.MaxValue / 3;
 
         class Edge
         {
             public int To;
-            // 逆辺
             public int Capacity;
+            // 逆辺
             public int Rev;
 
             public Edge(int to, int cap, int r)
@@ -41,7 +45,7 @@ namespace CompetitiveProgramming.Utils
         /// 
         /// </summary>
         /// <param name="n">ノード数</param>
-        public Dinic(int n)
+        public MaxFlow(int n)
         {
             G = Enumerable.Range(0, n)
                 .Select(_ => new List<Edge>())
@@ -54,9 +58,6 @@ namespace CompetitiveProgramming.Utils
         /// <summary>
         /// 流路追加
         /// </summary>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
-        /// <param name="cap"></param>
         public void Add(int from, int to, int cap)
         {
             G[from].Add(new Edge(to, cap, G[to].Count));
@@ -111,11 +112,8 @@ namespace CompetitiveProgramming.Utils
         }
 
         /// <summary>
-        /// 最大流量を調べる
+        /// sからtへの最大流量を調べる
         /// </summary>
-        /// <param name="s">始点</param>
-        /// <param name="t">終点</param>
-        /// <returns></returns>
         public int Flow(int s, int t)
         {
             if (s == t)
@@ -140,25 +138,6 @@ namespace CompetitiveProgramming.Utils
                     flow += f;
                 }
             }
-        }
-
-        /// <summary>
-        /// 始点と終点の探索
-        /// 一意に定まると仮定して返答する
-        /// </summary>
-        /// <returns></returns>
-        public Tuple<int, int> Find()
-        {
-            // 始点: 誰からも流れてきていない
-            var s = Enumerable.Range(0, G.Count())
-                .Except(G.SelectMany(x => x.Select(y => y.To)))
-                .FirstOrDefault();
-
-            // 終点: 誰へも流さない
-            var t = Enumerable.Range(0, G.Count())
-                .FirstOrDefault(x => !G[x].Any(y => y.Capacity > 0));
-
-            return new Tuple<int, int>(s, t);
         }
     }
 }
