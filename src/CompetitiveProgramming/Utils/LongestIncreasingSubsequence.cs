@@ -4,73 +4,62 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+/// <summary>
+/// LIS(Strong): http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=DPL_1_D
+/// LDS(Weak): https://atcoder.jp/contests/abc134/tasks/abc134_e
+/// </summary>
 namespace CompetitiveProgramming.Utils
 {
     /// <summary>
-    /// 部分列
+    /// 部分列(LIS/LDS)
     /// 減少を求めたいときは、(Max-input)しておくとか
     /// </summary>
-    static class Lis
+    static class Subsequence
     {
         /// <summary>
-        /// 最長(狭義単調)増加部分列の長さ
+        /// 最長単調増加部分列の長さ
         /// </summary>
-        public static int NarrowLength<T>(IList<T> nums) where T : IComparable<T>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="nums"></param>
+        /// <param name="inf">Tの最大値</param>
+        /// <param name="isStrong">狭義単調増加か？</param>
+        /// <returns></returns>
+        public static int LisLength<T>(IReadOnlyList<T> nums, T inf, bool isStrong = true) where T : IComparable<T>
         {
-            if (nums.Count() <= 0) { return 0; }
+            if (nums.Count() <= 0) return 0;
 
-            var iss = new List<T> { nums[0] };
-            foreach (var current in nums.Skip(1))
+            var bound = isStrong ? (Func<IList<T>, T, int>)Search.LowerBound : Search.UpperBound;
+            var dp = Enumerable.Repeat(inf, nums.Count()).ToList();
+            foreach (var current in nums)
             {
-                if (iss.Last().CompareTo(current) < 0)
-                {
-                    iss.Add(current);
-                }
-                else
-                {
-                    var i = Search.LowerBound(iss, current);
-                    iss[i] = current;
-                }
+                var i = bound(dp, current);
+                dp[i] = current;
             }
 
-            return iss.Count();
+            return Search.LowerBound(dp, inf);
         }
 
         /// <summary>
-        /// 最長(広義単調)増加部分列の長さ
+        /// 最長単調減少部分列の長さ
         /// </summary>
-        public static int BroadLength<T>(IList<T> nums, Func<T, T> increment)
-            where T : IComparable<T>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="nums"></param>
+        /// <param name="inf">Tの最大値</param>
+        /// <param name="rev">Tの大小関係の反転関数</param>
+        /// <param name="isStrong">狭義単調減少か？</param>
+        /// <returns></returns>
+        public static int LdsLength<T>(IReadOnlyList<T> nums, T inf, Func<T, T> rev, bool isStrong = true) where T : IComparable<T>
         {
-            if (nums.Count() <= 0) { return 0; }
+            // 0がinfになってしまわないように調整
+            var numsRev = nums.Select(x => rev(x)).ToArray();
 
-            var dss = new List<T>();
-            foreach (var current in nums.Skip(1))
-            {
-                var r = Search.LowerBound(dss, increment(current));
-                if (dss.Count() <= r)
-                {
-                    dss.Add(current);
-                }
-                else
-                {
-                    dss[r] = current;
-                }
-            }
-
-            return dss.Count();
+            return LisLength(numsRev, inf, isStrong);
         }
 
         #region LDS Sample
-        /// <summary>
-        /// 最長(狭義単調)減少部分列の長さ
-        /// </summary>
-        public static int LdsNarrowLength<T>(IList<T> nums, Func<T, T> reverse)
-            where T : IComparable<T>
+        static int LdsLengthInt(IReadOnlyList<int> nums, bool isStrong = true)
         {
-            var numsRev = nums.Select(x => reverse(x)).ToArray();
-
-            return NarrowLength(numsRev);
+            return LdsLength(nums, int.MaxValue, x => int.MaxValue - 1 - x, isStrong);
         }
         #endregion
 
