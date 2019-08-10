@@ -4,6 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+/// <summary>
+/// Dijkstra: http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=GRL_1_A&lang=jp
+/// BellmanFord: http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=GRL_1_B&lang=jp
+/// WarshallFloyd: http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=GRL_1_C&lang=jp
+/// </summary>
 namespace CompetitiveProgramming.Utils
 {
     /// <summary>
@@ -12,127 +17,6 @@ namespace CompetitiveProgramming.Utils
     /// </summary>
     class Dijkstra
     {
-        class PriorityQueue<T> where T : IComparable<T>
-        {
-            readonly List<T> Heap;
-            readonly Func<T, T, bool> compare;
-
-            public PriorityQueue(int capacity, bool isMinHeap = true)
-            {
-                this.Heap = new List<T>(capacity);
-
-                if (isMinHeap)
-                {
-                    compare = (x, y) => x.CompareTo(y) < 0;
-                }
-                else
-                {
-                    compare = (x, y) => x.CompareTo(y) > 0;
-                }
-            }
-
-            public PriorityQueue() : this(0) { }
-
-            static void PushHeap(List<T> heap, Func<T, T, bool> compare, T item)
-            {
-                var n = heap.Count();
-                heap.Add(item);
-
-                while (n != 0)
-                {
-                    var parent = (n - 1) / 2;
-
-                    if (compare(heap[n], heap[parent]))
-                    {
-                        var temp = heap[n];
-                        heap[n] = heap[parent];
-                        heap[parent] = temp;
-                    }
-
-                    n = parent;
-                }
-            }
-
-            static T PopHeap(List<T> heap, Func<T, T, bool> compare)
-            {
-                if (!heap.Any())
-                {
-                    throw new Exception();
-                }
-                var item = heap[0];
-
-                var n = heap.Count() - 1;
-                heap[0] = heap.Last();
-                heap.RemoveAt(n);
-
-                var parent = 0;
-                var child = 2 * parent + 1;
-                while (child < n)
-                {
-                    if ((child != n - 1) && compare(heap[child + 1], heap[child]))
-                    {
-                        child++;
-                    }
-
-                    if (compare(heap[child], heap[parent]))
-                    {
-                        var temp = heap[parent];
-                        heap[parent] = heap[child];
-                        heap[child] = temp;
-                    }
-
-                    parent = child;
-                    child = 2 * parent + 1;
-                }
-
-                return item;
-            }
-
-            /// <summary>
-            /// 要素追加
-            /// </summary>
-            /// <param name="item"></param>
-            public void Push(T item)
-            {
-                PushHeap(this.Heap, this.compare, item);
-            }
-
-            /// <summary>
-            /// 先頭の値取得し削除する
-            /// </summary>
-            /// <returns></returns>
-            public T Pop()
-            {
-                return PopHeap(this.Heap, this.compare);
-            }
-
-            /// <summary>
-            /// 先頭の値取得（削除はしない）
-            /// </summary>
-            /// <returns></returns>
-            public T Peek()
-            {
-                if (!this.Heap.Any())
-                {
-                    throw new Exception();
-                }
-
-                return this.Heap[0];
-            }
-
-            /// <summary>
-            /// ヒープに格納されているアイテム数
-            /// </summary>
-            /// <returns></returns>
-            public int Count() => this.Heap.Count();
-
-            /// <summary>
-            /// 一つでの値が格納されているか
-            /// </summary>
-            /// <returns></returns>
-            public bool Any() => this.Heap.Any();
-        }
-
         struct Edge : IComparable<Edge>
         {
             public int To;
@@ -150,11 +34,10 @@ namespace CompetitiveProgramming.Utils
             }
         }
 
-        static readonly long INF = long.MaxValue / 10;
+        public static readonly long Inf = long.MaxValue / 3;
 
         // 接続情報
         readonly List<List<Edge>> es;
-
         // ノード数
         readonly int V;
         // 経路復元用情報
@@ -175,21 +58,17 @@ namespace CompetitiveProgramming.Utils
         /// <summary>
         /// 経路追加
         /// </summary>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
-        /// <param name="cost"></param>
         public void AddPath(int from, int to, long cost)
             => es[from].Add(new Edge(to, cost));
 
         /// <summary>
-        /// 各ノードへの最短経路
+        /// sから各ノードへの最短経路
         /// </summary>
-        /// <param name="s"></param>
-        /// <returns></returns>
         public long[] ShortestPath(int s)
         {
-            var d = Enumerable.Repeat(INF, V).ToArray();
-            var pq = new PriorityQueue<Edge>();
+            var d = Enumerable.Repeat(Inf, V).ToArray();
+            // 昇順ソートにする
+            var pq = new PriorityQueue<Edge>((x, y) => y.CompareTo(x));
             Prev = Enumerable.Repeat(-1, V).ToArray();
 
             d[s] = 0;
@@ -219,7 +98,7 @@ namespace CompetitiveProgramming.Utils
         }
 
         /// <summary>
-        /// 最後に探索した経路を復元する
+        /// 経路を復元する
         /// </summary>
         /// <param name="t">目的ノード</param>
         /// <returns>探索したことがないときはnull</returns>
@@ -236,6 +115,104 @@ namespace CompetitiveProgramming.Utils
 
             return stack.ToArray();
         }
+
+        /// <summary>
+        /// 優先度付きキュー(二分ヒープ)
+        /// デフォルトは降順ソート
+        /// </summary>
+        class PriorityQueue<T>
+        {
+            static readonly int DefaultCapacity = 8;
+            readonly List<T> Heap;
+            readonly Comparison<T> Comparer;
+
+            public PriorityQueue(int capacity, Comparison<T> comparer)
+            {
+                Heap = new List<T>(capacity);
+                Comparer = comparer;
+            }
+
+            public PriorityQueue() : this(DefaultCapacity) { }
+            public PriorityQueue(int capacity) : this(capacity, Comparer<T>.Default.Compare) { }
+            public PriorityQueue(Comparison<T> comparer) : this(DefaultCapacity, comparer) { }
+
+            /// <summary> 要素追加 </summary>
+            public void Enqueue(T item)
+            {
+                var n = Heap.Count();
+                Heap.Add(item);
+
+                while (n > 0)
+                {
+                    var parent = (n - 1) / 2;
+                    if (Comparer(Heap[parent], item) > 0) break;
+
+                    Heap[n] = Heap[parent];
+                    n = parent;
+                }
+
+                Heap[n] = item;
+            }
+
+            /// <summary> 要素追加 </summary>
+            public void Push(T item) => Enqueue(item);
+
+            /// <summary> 先頭の値を取得し削除する </summary>
+            public T Dequeue()
+            {
+                if (!Heap.Any())
+                {
+                    throw new Exception();
+                }
+                var item = Heap[0];
+                var last = Heap.Last();
+
+                var n = Heap.Count() - 1;
+                var parent = 0;
+                var child = 2 * parent + 1;
+                while (child < n)
+                {
+                    if (child + 1 < n && Comparer(Heap[child + 1], Heap[child]) > 0)
+                    {
+                        child++;
+                    }
+
+                    if (Comparer(last, Heap[child]) > 0) break;
+
+                    Heap[parent] = Heap[child];
+                    parent = child;
+                    child = 2 * parent + 1;
+                }
+
+                Heap[parent] = last;
+                Heap.RemoveAt(n);
+
+                return item;
+            }
+
+            /// <summary> 先頭の値を取得し削除する </summary>
+            public T Pop() => Dequeue();
+
+            /// <summary>
+            /// 先頭の値取得（削除はしない）
+            /// </summary>
+            public T Peek()
+            {
+                if (!this.Heap.Any()) throw new Exception();
+
+                return this.Heap[0];
+            }
+
+            /// <summary>
+            /// ヒープに格納されているアイテム数
+            /// </summary>
+            public int Count() => this.Heap.Count();
+
+            /// <summary>
+            /// 一つでも値が格納されているか
+            /// </summary>
+            public bool Any() => this.Heap.Any();
+        }
     }
 
     /// <summary>
@@ -244,15 +221,15 @@ namespace CompetitiveProgramming.Utils
     /// </summary>
     class BellmanFord
     {
-        static readonly int INF = int.MaxValue / 5;
+        public static readonly long Inf = long.MaxValue / 3;
 
         struct Edge
         {
             public int From;
             public int To;
-            public int Cost;
+            public long Cost;
 
-            public Edge(int from, int to, int cost)
+            public Edge(int from, int to, long cost)
             {
                 this.From = from;
                 this.To = to;
@@ -262,7 +239,6 @@ namespace CompetitiveProgramming.Utils
 
         // 接続情報
         readonly List<Edge> es;
-
         // ノード数
         readonly int V;
 
@@ -279,21 +255,17 @@ namespace CompetitiveProgramming.Utils
         /// <summary>
         /// 経路追加
         /// </summary>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
-        /// <param name="cost"></param>
-        public void AddPath(int from, int to, int cost)
+        public void AddPath(int from, int to, long cost)
             => es.Add(new Edge(from, to, cost));
 
         /// <summary>
-        /// 各ノードへの最短経路
+        /// sから各ノードへの最短経路
+        /// 負の閉路がある場合、nullを返す
         /// </summary>
-        /// <param name="s"></param>
-        /// <returns>nullなら負経路がある</returns>
-        public int[] ShortestPath(int s)
+        public long[] ShortestPath(int s)
         {
             var E = this.es.Count();
-            var d = Enumerable.Repeat(INF, V).ToArray();
+            var d = Enumerable.Repeat(Inf, V).ToArray();
 
             d[s] = 0;
             int count;
@@ -303,7 +275,7 @@ namespace CompetitiveProgramming.Utils
                 for (int i = 0; i < E; i++)
                 {
                     var e = es[i];
-                    if (d[e.From] != INF && d[e.To] > d[e.From] + e.Cost)
+                    if (d[e.From] != Inf && d[e.To] > d[e.From] + e.Cost)
                     {
                         // こっちの経路の方が効率的
                         d[e.To] = d[e.From] + e.Cost;
@@ -314,8 +286,9 @@ namespace CompetitiveProgramming.Utils
                 if (!update) break;
             }
 
-            if (count >= V - 1) return null;
-            else return d;
+            if (count > V - 1) return null;
+
+            return d;
         }
     }
 
@@ -324,11 +297,10 @@ namespace CompetitiveProgramming.Utils
     /// </summary>
     class WarshallFloyd
     {
-        static readonly int INF = int.MaxValue / 5;
+        public static readonly long Inf = long.MaxValue / 3;
 
         // 接続情報
-        readonly int[,] es;
-
+        readonly long[,] es;
         // ノード数
         readonly int V;
 
@@ -338,12 +310,12 @@ namespace CompetitiveProgramming.Utils
         /// <param name="v">ノード数</param>
         public WarshallFloyd(int v)
         {
-            es = new int[v, v];
+            es = new long[v, v];
             for (int i = 0; i < v; i++)
             {
                 for (int j = 0; j < v; j++)
                 {
-                    es[i, j] = (i == j) ? 0 : INF;
+                    es[i, j] = (i == j) ? 0 : Inf;
                 }
             }
 
@@ -353,21 +325,23 @@ namespace CompetitiveProgramming.Utils
         /// <summary>
         /// 経路追加
         /// </summary>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
-        /// <param name="cost"></param>
-        public void AddPath(int from, int to, int cost)
+        public void AddPath(int from, int to, long cost)
             => es[from, to] = cost;
 
         /// <summary>
-        /// 各ノードへの最短経路
+        /// sから各ノードへの最短経路
+        /// 負の閉路を持つ場合、nullを返す
         /// </summary>
-        /// <param name="s"></param>
-        /// <returns></returns>
-        public int[,] ShortestPath()
+        public long[,] ShortestPath()
         {
-            var d = new int[V, V];
-            Array.Copy(es, d, d.Length);
+            var d = new long[V, V];
+            for (int i = 0; i < V; i++)
+            {
+                for (int j = 0; j < V; j++)
+                {
+                    d[i, j] = es[i, j];
+                }
+            }
 
             for (int i = 0; i < V; i++)
             {
@@ -375,9 +349,17 @@ namespace CompetitiveProgramming.Utils
                 {
                     for (int k = 0; k < V; k++)
                     {
+                        if (d[j, i] == Inf || d[i, k] == Inf) continue;
+
                         d[j, k] = Math.Min(d[j, k], d[j, i] + d[i, k]);
                     }
                 }
+            }
+
+            // 負の閉路がある？
+            for (int i = 0; i < V; i++)
+            {
+                if (d[i, i] < 0) return null;
             }
 
             return d;
