@@ -5,39 +5,33 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+/// <summary>
+/// http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ALDS1_9_C&lang=jp
+/// </summary>
 namespace CompetitiveProgramming.Utils
 {
     /// <summary>
-    /// 優先度付きキュー
-    /// デフォルトは昇順にソートされていて、小さい値から取り出される
+    /// 優先度付きキュー(二分ヒープ)
+    /// デフォルトは降順ソート
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    class PriorityQueue<T> where T : IComparable<T>
+    class PriorityQueue<T>
     {
+        static readonly int DefaultCapacity = 8;
         readonly List<T> Heap;
-        readonly Func<T, T, bool> compare;
+        readonly Comparison<T> Comparer;
 
-        public PriorityQueue(int capacity, bool isMinHeap = true)
+        public PriorityQueue(int capacity, Comparison<T> comparer)
         {
-            this.Heap = new List<T>(capacity);
-
-            if (isMinHeap)
-            {
-                compare = (x, y) => x.CompareTo(y) < 0;
-            }
-            else
-            {
-                compare = (x, y) => x.CompareTo(y) > 0;
-            }
+            Heap = new List<T>(capacity);
+            Comparer = comparer;
         }
 
-        public PriorityQueue() : this(0) { }
+        public PriorityQueue() : this(DefaultCapacity) { }
+        public PriorityQueue(int capacity) : this(capacity, Comparer<T>.Default.Compare) { }
+        public PriorityQueue(Comparison<T> comparer) : this(DefaultCapacity, comparer) { }
 
-        /// <summary>
-        /// 要素追加
-        /// </summary>
-        /// <param name="item"></param>
-        public void Push(T item)
+        /// <summary> 要素追加 </summary>
+        public void Enqueue(T item)
         {
             var n = Heap.Count();
             Heap.Add(item);
@@ -45,7 +39,7 @@ namespace CompetitiveProgramming.Utils
             while (n > 0)
             {
                 var parent = (n - 1) / 2;
-                if (compare(Heap[parent], item)) break;
+                if (Comparer(Heap[parent], item) > 0) break;
 
                 Heap[n] = Heap[parent];
                 n = parent;
@@ -54,11 +48,11 @@ namespace CompetitiveProgramming.Utils
             Heap[n] = item;
         }
 
-        /// <summary>
-        /// 先頭の値取得し削除する
-        /// </summary>
-        /// <returns></returns>
-        public T Pop()
+        /// <summary> 要素追加 </summary>
+        public void Push(T item) => Enqueue(item);
+
+        /// <summary> 先頭の値を取得し削除する </summary>
+        public T Dequeue()
         {
             if (!Heap.Any())
             {
@@ -72,12 +66,12 @@ namespace CompetitiveProgramming.Utils
             var child = 2 * parent + 1;
             while (child < n)
             {
-                if (child + 1 < n && compare(Heap[child + 1], Heap[child]))
+                if (child + 1 < n && Comparer(Heap[child + 1], Heap[child]) > 0)
                 {
                     child++;
                 }
 
-                if (compare(last, Heap[child])) break;
+                if (Comparer(last, Heap[child]) > 0) break;
 
                 Heap[parent] = Heap[child];
                 parent = child;
@@ -90,16 +84,15 @@ namespace CompetitiveProgramming.Utils
             return item;
         }
 
+        /// <summary> 先頭の値を取得し削除する </summary>
+        public T Pop() => Dequeue();
+
         /// <summary>
         /// 先頭の値取得（削除はしない）
         /// </summary>
-        /// <returns></returns>
         public T Peek()
         {
-            if (!this.Heap.Any())
-            {
-                throw new Exception();
-            }
+            if (!this.Heap.Any()) throw new Exception();
 
             return this.Heap[0];
         }
@@ -107,13 +100,11 @@ namespace CompetitiveProgramming.Utils
         /// <summary>
         /// ヒープに格納されているアイテム数
         /// </summary>
-        /// <returns></returns>
         public int Count() => this.Heap.Count();
 
         /// <summary>
-        /// 一つでの値が格納されているか
+        /// 一つでも値が格納されているか
         /// </summary>
-        /// <returns></returns>
         public bool Any() => this.Heap.Any();
     }
 
