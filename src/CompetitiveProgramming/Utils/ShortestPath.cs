@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 /// <summary>
 /// Dijkstra: http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=GRL_1_A&lang=jp
-/// BellmanFord: http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=GRL_1_B&lang=jp
+/// BellmanFord(負の経路 簡略）: http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=GRL_1_B&lang=jp
+/// BellmanFord(負の経路 詳細）: https://atcoder.jp/contests/abc137/tasks/abc137_e
 /// WarshallFloyd: http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=GRL_1_C&lang=jp
 /// </summary>
 namespace CompetitiveProgramming.Utils
@@ -222,6 +223,9 @@ namespace CompetitiveProgramming.Utils
     class BellmanFord
     {
         public static readonly long Inf = long.MaxValue / 3;
+        public static readonly long NegCycle = -Inf;
+
+        public bool HasNegCycle = false;
 
         struct Edge
         {
@@ -231,9 +235,9 @@ namespace CompetitiveProgramming.Utils
 
             public Edge(int from, int to, long cost)
             {
-                this.From = from;
-                this.To = to;
-                this.Cost = cost;
+                From = from;
+                To = to;
+                Cost = cost;
             }
         }
 
@@ -260,14 +264,40 @@ namespace CompetitiveProgramming.Utils
 
         /// <summary>
         /// sから各ノードへの最短経路
-        /// 負の閉路がある場合、nullを返す
+        /// 負の経路がある場合HasNegCycleがtrueになる
+        /// 
+        /// needsDetailがtrue
+        /// sとの経路に負の閉路があるノードはNegCycle
+        /// 
+        /// needsDetailがfalse
+        /// 負の経路がある辺の情報は不確かのまま
         /// </summary>
-        public long[] ShortestPath(int s)
+        public long[] ShortestPath(int s, bool needsDetail)
         {
-            var E = this.es.Count();
+            var E = es.Count();
             var d = Enumerable.Repeat(Inf, V).ToArray();
 
             d[s] = 0;
+            HasNegCycle = false;
+            int count = RelaxEdges(E, d, (x, y) => x + y);
+
+            // 閉路が一つでもある
+            HasNegCycle = count > V - 1;
+
+            if (needsDetail)
+            {
+                // 詳細な負の閉路検出
+                RelaxEdges(E, d, (x, y) => NegCycle);
+            }
+
+            return d;
+        }
+
+        /// <summary>
+        /// 辺の緩和
+        /// </summary>
+        int RelaxEdges(int E, long[] d, Func<long, long, long> relax)
+        {
             int count;
             for (count = 0; count < V; count++)
             {
@@ -275,10 +305,10 @@ namespace CompetitiveProgramming.Utils
                 for (int i = 0; i < E; i++)
                 {
                     var e = es[i];
-                    if (d[e.From] != Inf && d[e.To] > d[e.From] + e.Cost)
+                    if (d[e.From] == Inf) continue;
+                    if (d[e.To] > d[e.From] + e.Cost)
                     {
-                        // こっちの経路の方が効率的
-                        d[e.To] = d[e.From] + e.Cost;
+                        d[e.To] = relax(d[e.From], e.Cost);
                         update = true;
                     }
                 }
@@ -286,9 +316,7 @@ namespace CompetitiveProgramming.Utils
                 if (!update) break;
             }
 
-            if (count > V - 1) return null;
-
-            return d;
+            return count;
         }
     }
 
