@@ -39,7 +39,7 @@ namespace CompetitiveProgramming.Utils
         }
 
         /// <summary>
-        /// S[l,r)のハッシュを取得
+        /// Mods[i]におけるS[l,r)のハッシュを取得
         /// </summary>
         long GetHash(int l, int r, int i)
         {
@@ -50,11 +50,30 @@ namespace CompetitiveProgramming.Utils
         }
 
         /// <summary>
+        /// 全てのModsにおけるs[l,r)のハッシュを取得
+        /// </summary>
+        /// <remarks>
+        /// long[]はそのままでは等価チェックはできないので注意！
+        /// DictionaryのKeyで使いたい場合などは文字列として結合するなどする
+        /// </remarks>
+        public long[] GetHashes(int l, int r)
+        {
+            return Enumerable.Range(0, Mods.Length)
+                .Select(x => GetHash(l, r, x))
+                .ToArray();
+        }
+
+        /// <summary>
         /// 全てのModsでS[l,r)が一致するか
-        /// 2つのrhashを比較する
         /// </summary>
         public bool Match(RollingHash other, int l1, int l2, int len)
         {
+            // 範囲外
+            if (this.S.Length < l1 + len || other.S.Length < l2 + len)
+            {
+                return false;
+            }
+
             for (int i = 0; i < Mods.Length; i++)
             {
                 if (GetHash(l1, l1 + len, i) != other.GetHash(l2, l2 + len, i))
@@ -77,7 +96,7 @@ namespace CompetitiveProgramming.Utils
             int low = -1, high = len + 1;
             while (high - low > 1)
             {
-                var mid = (low + high) / 2;
+                var mid = low + (high - low) / 2;
 
                 if (!Match(other, l1, l2, mid))
                 {
@@ -99,7 +118,7 @@ namespace CompetitiveProgramming.Utils
             => GetLcp(this, l1, l2);
 
         /// <summary>
-        /// this.S[l1:]とother全体が一致しているか
+        /// this.S[l1:]がotherで始まっているか
         /// </summary>
         public bool BeginWith(RollingHash other, int l1)
             => Match(other, l1, 0, other.S.Length);
