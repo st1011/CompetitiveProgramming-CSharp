@@ -11,12 +11,15 @@ namespace CompetitiveProgramming.Utils
     /// セグメント木
     /// 点代入・区間演算系
     /// </summary>
+    /// <remarks>
+    /// 構築O(N)
+    /// クエリO(logN)
+    /// </remarks>
     class SegTree<T>
     {
         readonly int N;
         readonly T[] Nodes;
         readonly Func<T, T, T> Monoid;
-        readonly T InitValue;
         readonly T IgnorableValue;
 
         /// <summary>
@@ -35,21 +38,19 @@ namespace CompetitiveProgramming.Utils
             while (N < n) N *= 2;
 
             Monoid = monoid;
-            InitValue = initValue;
             IgnorableValue = ignorableValue;
 
-            Nodes = Enumerable.Repeat(InitValue, 2 * N - 1).ToArray();
+            Nodes = Enumerable.Repeat(initValue, 2 * N - 1).ToArray();
         }
 
         /// <summary>
         /// 初期値付きの初期化
         /// </summary>
-        /// <param name="monoid"></param>
-        /// <param name="initValue"></param>
-        /// <param name="ignorableValue"></param>
         /// <param name="ie"></param>
-        public SegTree(Func<T, T, T> monoid, T initValue, T ignorableValue, IEnumerable<T> ie)
-            : this(ie.Count(), monoid, initValue, ignorableValue)
+        /// <param name="monoid"></param>
+        /// <param name="ignorableValue"></param>
+        public SegTree(IReadOnlyList<T> ie, Func<T, T, T> monoid, T ignorableValue)
+            : this(ie.Count(), monoid, ignorableValue, ignorableValue)
         {
             var n = ie.Count();
 
@@ -67,21 +68,21 @@ namespace CompetitiveProgramming.Utils
         }
 
         /// <summary>
-        /// k番目の要素をvに変更
+        /// index番目の要素をvに変更
         /// </summary>
-        /// <param name="k">index(0-based)</param>
+        /// <param name="index">index(0-based)</param>
         /// <param name="v">更新する値</param>
-        public void Update(int k, T v)
+        public void Update(int index, T v)
         {
             // 該当の最下段index
-            k += N - 1;
+            index += N - 1;
 
-            Nodes[k] = v;
-            while (k > 0)
+            Nodes[index] = v;
+            while (index > 0)
             {
                 // 親ノードを一つずつ更新していく
-                k = (k - 1) / 2;
-                Nodes[k] = Monoid(Nodes[2 * k + 1], Nodes[2 * k + 2]);
+                index = (index - 1) / 2;
+                Nodes[index] = Monoid(Nodes[2 * index + 1], Nodes[2 * index + 2]);
             }
         }
 
@@ -117,19 +118,14 @@ namespace CompetitiveProgramming.Utils
         /// <summary>
         /// [b,e)の演算結果を求める
         /// </summary>
-        /// <param name="b"></param>
-        /// <param name="e"></param>
-        /// <returns></returns>
         public T Find(int b, int e)
             => Find(b, e, 0, 0, N);
 
         /// <summary>
-        /// k番目の要素の取得
+        /// index番目の要素の取得
         /// </summary>
-        /// <param name="k"></param>
-        /// <returns></returns>
-        public T Peek(int k)
-            => Nodes[k + N - 1];
+        public T Peek(int index)
+            => Nodes[index + N - 1];
 
         // メモ
         // (k-1)/2が親ノード
