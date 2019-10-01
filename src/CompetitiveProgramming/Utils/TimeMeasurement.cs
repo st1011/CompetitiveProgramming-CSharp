@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CompetitiveProgramming.Utils
 {
-    class Time
+    public class Time
     {
         public static void Measure(Action action, int repeat = 100)
         {
