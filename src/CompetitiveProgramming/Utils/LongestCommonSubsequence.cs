@@ -4,64 +4,65 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+/// <summary>
+/// Length: http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ALDS1_10_C&lang=ja
+/// Restore: https://atcoder.jp/contests/dp/tasks/dp_f
+/// </summary>
 namespace CompetitiveProgramming.Utils
 {
     /// <summary>
     /// 最長共通部分列
     /// </summary>
-    class LongestCommonSubsequence<T> where T : IComparable<T>
+    public class LongestCommonSubsequence<T> where T : IEquatable<T>
     {
-        public IList<T> X { get; private set; }
-        public IList<T> Y { get; private set; }
-        public IList<T> Lcs { get; set; }
+        public IReadOnlyList<T> X { get; private set; }
+        public IReadOnlyList<T> Y { get; private set; }
+        public int Length { get; }
+
         int[,] Dp { get; set; }
+        T[] Lcs { get; set; }
 
-        public int Length { get { return Dp[X.Count(), Y.Count()]; } }
-
-        public LongestCommonSubsequence(IList<T> x, IList<T> y)
+        public LongestCommonSubsequence(IReadOnlyList<T> x, IReadOnlyList<T> y)
         {
             X = x;
             Y = y;
 
             // 計算まで済ませておく
-            LcsDP(X, Y);
-            // 実際の部分列は使わないかもしれないので、保留
-            Lcs = null;
+            Dp = LcsDP(X, Y);
+            Length = Dp[X.Count, y.Count];
         }
 
         /// <summary>
         /// LCSのテーブルを計算する
         /// </summary>
-        public void LcsDP(IList<T> x, IList<T> y)
+        int[,] LcsDP(IReadOnlyList<T> x, IReadOnlyList<T> y)
         {
-            var m = x.Count();
-            var n = y.Count();
+            var m = x.Count;
+            var n = y.Count;
 
-            Dp = new int[m + 1, n + 1];
+            var dp = new int[m + 1, n + 1];
             for (int i = 1; i <= m; i++)
             {
                 for (int j = 1; j <= n; j++)
                 {
-                    if (x[i - 1].CompareTo(y[j - 1]) == 0)
+                    if (x[i - 1].Equals(y[j - 1]))
                     {
-                        Dp[i, j] = Dp[i - 1, j - 1] + 1;
-                    }
-                    else if (Dp[i - 1, j] >= Dp[i, j - 1])
-                    {
-                        Dp[i, j] = Dp[i - 1, j];
+                        dp[i, j] = dp[i - 1, j - 1] + 1;
                     }
                     else
                     {
-                        Dp[i, j] = Dp[i, j - 1];
+                        dp[i, j] = Math.Max(dp[i - 1, j], dp[i, j - 1]);
                     }
                 }
             }
+
+            return dp;
         }
 
         /// <summary>
         /// LCSの計算用テーブルからLCSを復元する
         /// </summary>
-        void RestoreLcs(IList<T> x, int[,] l)
+        T[] RestoreLcs(IReadOnlyList<T> x, int[,] l)
         {
             var i = l.GetLength(0) - 1;
             var j = l.GetLength(1) - 1;
@@ -85,16 +86,18 @@ namespace CompetitiveProgramming.Utils
                 }
             }
 
-            Lcs = stack.ToArray();
+            return stack.ToArray();
         }
 
         /// <summary>
         /// LCSを取得
         /// </summary>
-        /// <returns></returns>
-        public IList<T> GetLcs()
+        public T[] GetLcs()
         {
-            if (Lcs == null) RestoreLcs(X, Dp);
+            if (Lcs == null)
+            {
+                Lcs = RestoreLcs(X, Dp);
+            }
 
             return Lcs;
         }
