@@ -5,35 +5,63 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+/// <summary>
+/// BeginWith: http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ALDS1_14_B&lang=ja
+/// GetHashes: https://atcoder.jp/contests/abc141/tasks/abc141_e
+/// </summary>
 namespace CompetitiveProgramming.Utils
 {
     /// <summary>
     /// 文字列専用ローリングハッシュ
     /// </summary>
-    class RollingHash
+    public class RollingHash
     {
         // 衝突防止で、複数個のmodを指定しておく
         static readonly long[] Mods = { 999999893, 999999937 };
-        static readonly long Base = 1013;
-        readonly string S;
+
+        public readonly string S;
+
+        readonly int Base;
         readonly long[,] Hashes;
         readonly long[,] Powers;
 
-        public RollingHash(string s)
+        /// <summary>
+        /// 初期化
+        /// </summary>
+        /// <param name="s">文字列</param>
+        /// <param name="b">演算定数
+        /// 指定しない場合は内部で乱数を使う</param>
+        public RollingHash(string s, int b = 0)
         {
-            var mcount = Mods.Length;
-
             S = s;
-            Hashes = new long[mcount, s.Length + 1];
-            Powers = new long[mcount, s.Length + 1];
 
-            for (int i = 0; i < mcount; i++)
+            if (b <= 0) { b = new Random().Next(0x111, 0x1111); }
+            Base = b;
+
+            Hashes = new long[Mods.Length, s.Length + 1];
+            Powers = new long[Mods.Length, s.Length + 1];
+            BuildTable(s, b, Mods, Hashes, Powers);
+        }
+
+        /// <summary>
+        /// 比較可能なロリハを作成する
+        /// </summary>
+        /// <param name="s">文字列</param>
+        public RollingHash CreateComparable(string s)
+            => new RollingHash(s, this.Base);
+
+        /// <summary>
+        /// 演算用のテーブル初期化
+        /// </summary>
+        void BuildTable(string s, int b, long[] mods, long[,] hashes, long[,] powers)
+        {
+            for (int i = 0; i < mods.Length; i++)
             {
-                Powers[i, 0] = 1;
+                powers[i, 0] = 1;
                 for (int j = 0; j < s.Length; j++)
                 {
-                    Hashes[i, j + 1] = (Hashes[i, j] * Base + s[j]) % Mods[i];
-                    Powers[i, j + 1] = (Powers[i, j] * Base) % Mods[i];
+                    hashes[i, j + 1] = (hashes[i, j] * b + s[j]) % mods[i];
+                    powers[i, j + 1] = (powers[i, j] * b) % mods[i];
                 }
             }
         }
