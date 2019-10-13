@@ -1,142 +1,199 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
+/// <summary>
+/// https://onlinejudge.u-aizu.ac.jp/problems/ITP2_1_B
+/// </summary>
 namespace CompetitiveProgramming.Utils
 {
     /// <summary>
     /// 両端Queue
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    class Deque<T>
+    public class ArrayDeque<T> : IEnumerable<T>, IEnumerable
     {
-        T[] Buf;
-        public int Count
-        {
-            get { return Tail - Head - 1; }
-        }
-        public int Capacity
-        {
-            get { return Buf.Length; }
-        }
-        public int Head { get; set; }
-        public int Tail { get; set; }
+        private const int DefaultCapacity = 4;
 
-        public T this[int i]
-        {
-            get { return Buf[Head + 1 + i]; }
-        }
+        private T[] Array;
+        private int Head;
 
-        public Deque(int capacity = 16)
+        public int Count { get; private set; }
+
+        public T this[int index]
         {
-            Buf = new T[capacity];
-            Head = Buf.Length / 2 - 1;
-            Tail = Buf.Length / 2;
+            get { return Array[(Head + index) % Array.Length]; }
+            set { Array[(Head + index) % Array.Length] = value; }
         }
 
         /// <summary>
-        /// 内部の配列を拡張する
-        /// headかtail一方だけを連続して実行されると、無駄に配列が長くなってしまう
+        /// 空のDeque
         /// </summary>
-        void Expand()
+        public ArrayDeque()
         {
-            var next = new T[Buf.Length * 2];
-            Array.Copy(Buf, 0, next, Buf.Length / 2, Buf.Length);
-
-            Head += Buf.Length / 2;
-            Tail += Buf.Length / 2;
-
-            Buf = next;
+            Array = new T[DefaultCapacity];
+            Head = 0;
+            Count = 0;
         }
 
         /// <summary>
-        /// 先頭に要素追加
+        /// 引数を初期として保持するDeque
         /// </summary>
-        /// <param name="item"></param>
-        public void PushHead(T item)
+        public ArrayDeque(IEnumerable<T> collection)
         {
-            if (Head < 0)
+            Head = 0;
+            var arr = collection.ToArray();
+
+            var m = 1;
+            while (m < arr.Length)
             {
-                Expand();
+                m *= 2;
             }
 
-            Buf[Head--] = item;
+            Array = new T[m];
+            arr.CopyTo(Array, 0);
+            Count = arr.Length;
         }
 
+
         /// <summary>
-        /// 末尾に要素追加
+        /// [i]にxを追加
         /// </summary>
-        /// <param name="item"></param>
-        public void PushTail(T item)
+        private void Add(int i, T x)
         {
-            if (Tail >= Buf.Length)
+            if (Count + 1 >= Array.Length)
             {
-                Expand();
+                Resize();
             }
 
-            Buf[Tail++] = item;
+            if (i < Count / 2)
+            {
+                Head = (Head == 0) ? Array.Length - 1 : Head - 1;
+                for (int k = 0; k <= i - 1; k++)
+                {
+                    Array[(Head + k) % Array.Length]
+                        = Array[(Head + k + 1) % Array.Length];
+                }
+            }
+            else
+            {
+                for (int k = Count; k > i; k--)
+                {
+                    Array[(Head + k) % Array.Length]
+                        = Array[(Head + k - 1) % Array.Length];
+                }
+            }
+
+            Array[(Head + i) % Array.Length] = x;
+            Count++;
         }
 
         /// <summary>
-        /// 先頭の要素返却・削除
+        /// [i]のアイテムを削除
+        /// </summary>
+        private T Remove(int i)
+        {
+            var x = Array[(Head + 1) % Array.Length];
+
+            if (i < Count / 2)
+            {
+                for (int k = i; k > 0; k--)
+                {
+                    Array[(Head + k) % Array.Length]
+                        = Array[(Head + k - 1) % Array.Length];
+                }
+
+                Head = (Head + 1) % Array.Length;
+            }
+            else
+            {
+                for (int k = i; k < Count - i; k++)
+                {
+                    Array[(Head + k) % Array.Length]
+                        = Array[(Head + k + 1) % Array.Length];
+                }
+            }
+
+            Count--;
+            if (3 * Count < Array.Length)
+            {
+                Resize();
+            }
+
+            return x;
+        }
+
+        /// <summary>
+        /// 配列の拡張
+        /// </summary>
+        private void Resize()
+        {
+            var arr = new T[Math.Max(DefaultCapacity, 2 * Count)];
+            for (int k = 0; k < Count; k++)
+            {
+                arr[k] = Array[(Head + k) % Array.Length];
+            }
+
+            Array = arr;
+            Head = 0;
+        }
+
+        /// <summary>
+        /// 先頭へ要素xを追加
+        /// </summary>
+        public void PushFront(T x) => Add(0, x);
+
+        /// <summary>
+        /// 末尾へ要素xを追加
+        /// </summary>
+        public void PushBack(T x) => Add(Count, x);
+
+        /// <summary>
+        /// 先頭の要素取得・削除
         /// </summary>
         /// <returns></returns>
-        public T PopHead()
-        {
-            if (!Any())
-            {
-                throw new Exception();
-            }
+        public T PopFront() => Remove(0);
 
-            return Buf[++Head];
+        /// <summary>
+        /// 末尾の要素取得・削除
+        /// </summary>
+        public T PopBack() => Remove(Count);
+
+        /// <summary>
+        /// 先頭の要素取得
+        /// </summary>
+        public T PeekFront() => this[0];
+
+        /// <summary>
+        /// 末尾の要素取得
+        /// </summary>
+        public T PeekBack() => this[Count - 1];
+
+        /// <summary>
+        /// 全要素削除
+        /// </summary>
+        public void Clear()
+        {
+            System.Array.Clear(Array, 0, Array.Length);
+            Count = 0;
+            Head = 0;
         }
 
         /// <summary>
-        /// 末尾の要素返却・削除
+        /// 要素を保持しているか
         /// </summary>
-        /// <returns></returns>
-        public T PopTail()
-        {
-            if (!Any())
-            {
-                throw new Exception();
-            }
+        public bool Any() => Count != 0;
 
-            return Buf[--Tail];
+        public override string ToString() => string.Join(" ", this);
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            for (int i = 0; i < Count; i++)
+            {
+                yield return this[i];
+            }
         }
 
-        /// <summary>
-        /// 先頭の要素返却
-        /// </summary>
-        /// <returns></returns>
-        public T PeekHead()
-        {
-            if (!Any())
-            {
-                throw new Exception();
-            }
-
-            return Buf[Head + 1];
-        }
-
-        /// <summary>
-        /// 末尾の要素返却
-        /// </summary>
-        /// <returns></returns>
-        public T PeekTail()
-        {
-            if (!Any())
-            {
-                throw new Exception();
-            }
-
-            return Buf[Tail - 1];
-        }
-
-        public bool Any()
-            => Count != 0;
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }
