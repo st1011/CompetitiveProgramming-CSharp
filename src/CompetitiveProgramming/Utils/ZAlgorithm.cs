@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 /// <summary>
 /// https://atcoder.jp/contests/abc141/tasks/abc141_e
+/// https://judge.yosupo.jp/problem/zalgorithm
 /// </summary>
 namespace CompetitiveProgramming.Utils
 {
@@ -26,6 +27,9 @@ namespace CompetitiveProgramming.Utils
             var n = s.Length;
             var lcp = new int[n];
 
+            if (n == 0) { return lcp; }
+
+            lcp[0] = n;
             int i = 1;
             int j = 0;
             while (i < n)
