@@ -4,53 +4,102 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+/// <summary>
+/// http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=GRL_7_A&lang=ja
+/// https://judge.yosupo.jp/problem/bipartitematching
+/// </summary>
 namespace CompetitiveProgramming.Utils
 {
     /// <summary>
     /// 最大二部マッチング
-    /// シンプル版だけど、遅い
+    /// Hopcroft-Karp
+    /// O(E sqrt(V))
     /// </summary>
     class BipartiteMaximumMatching
     {
-        readonly int V;
+        // 前半が左側のノード、続いて右側のノードが存在するとして扱う
         readonly List<int>[] G;
+
+        // 最大マッチングの時の相手
+        readonly int[] Match;
+
+        readonly int lV, rV;
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="v">ノード数</param>
-        public BipartiteMaximumMatching(int v)
+        /// <param name="lv">左グラフのノード数</param>
+        /// <param name="rv">右グラフのノード数</param>
+        public BipartiteMaximumMatching(int lv, int rv)
         {
+            var v = lv + rv;
+
             G = Enumerable.Range(0, v)
                 .Select(_ => new List<int>())
                 .ToArray();
 
-            V = v;
+            Match = Enumerable.Repeat(-1, v).ToArray();
+
+            lV = lv;
+            rV = rv;
         }
 
         /// <summary>
-        /// パスの追加
+        /// ペアの追加
         /// </summary>
-        public void Add(int v1, int v2)
+        /// <param name="l">0-index</param>
+        /// <param name="r">0-index</param>
+        public void Add(int l, int r)
         {
-            G[v1].Add(v2);
-            G[v2].Add(v1);
+            G[l].Add(r + lV);
+            G[r + lV].Add(l);
         }
 
-        /// <summary>
-        /// 増加パスを探す
-        /// </summary>
-        bool Dfs(int[] match, bool[] used, int v)
+        void Bfs(int[] dist, bool[] matched)
         {
-            used[v] = true;
-            for (int i = 0; i < G[v].Count(); i++)
+            for (int i = 0; i < dist.Length; i++)
             {
-                var u = G[v][i];
-                var w = match[u];
-                if (w < 0 || !used[w] && Dfs(match, used, w))
+                dist[i] = -1;
+            }
+
+            var q = new Queue<int>();
+            for (int i = 0; i < G.Length; i++)
+            {
+                if (!matched[i])
                 {
-                    match[v] = u;
-                    match[u] = v;
+                    q.Enqueue(i);
+                    dist[i] = 0;
+                }
+            }
+
+            while (q.Any())
+            {
+                var v = q.Dequeue();
+                foreach (var e in G[v])
+                {
+                    var next = Match[e];
+                    if (next >= 0 && dist[next] < 0)
+                    {
+                        dist[next] = dist[v] + 1;
+                        q.Enqueue(next);
+                    }
+                }
+            }
+        }
+
+        bool Dfs(int v, int[] dist, bool[] matched, bool[] seen)
+        {
+            if (seen[v]) { return false; }
+
+            seen[v] = true;
+            foreach (var e in G[v])
+            {
+                var next = Match[e];
+                if (next < 0 || (!seen[next] && dist[next] == dist[v] + 1 && Dfs(next, dist, matched, seen)))
+                {
+                    Match[e] = v;
+                    matched[v] = true;
+
                     return true;
                 }
             }
@@ -59,27 +108,71 @@ namespace CompetitiveProgramming.Utils
         }
 
         /// <summary>
-        /// 最大二部マッチングのペアリストと数を返す
+        /// 最大二部マッチング演算
         /// </summary>
-        public Tuple<int[], int> Matching()
+        int SolveMatching()
         {
-            int res = 0;
+            var dist = new int[G.Length];
+            var matched = new bool[G.Length];
+            var seen = new bool[G.Length];
 
-            // マッチする相手
-            var match = Enumerable.Repeat(-1, V).ToArray();
-            for (int i = 0; i < V; i++)
+            int matchCount = 0;
+            while (true)
             {
-                if (match[i] < 0)
+                Bfs(dist, matched);
+
+                for (int i = 0; i < G.Length; i++)
                 {
-                    var used = new bool[V];
-                    if (Dfs(match, used, i))
+                    seen[i] = false;
+                }
+
+                int flow = 0;
+                for (int i = 0; i < G.Length; i++)
+                {
+                    if (!matched[i] && Dfs(i, dist, matched, seen))
                     {
-                        res++;
+                        flow++;
                     }
+                }
+
+                if (flow == 0)
+                {
+                    // 無向辺として登録したので、2倍カウントされている
+                    return matchCount / 2;
+                }
+
+                matchCount += flow;
+            }
+        }
+
+        /// <summary>
+        /// 最大二部マッチング演算
+        /// 2回以上呼び出されることは想定していないので注意
+        /// </summary>
+        /// <returns>
+        /// Item1: マッチング数
+        /// Item2: 左グラフ[i]とマッチングする相手
+        /// Item3: 右グラフ[i]とマッチングする相手
+        /// </returns>
+        public Tuple<int, int[], int[]> Matching()
+        {
+            var n = SolveMatching();
+
+            var l = new int[lV];
+            var r = new int[rV];
+
+            Array.Copy(Match, 0, l, 0, lV);
+            Array.Copy(Match, lV, r, 0, rV);
+
+            for (int i = 0; i < l.Length; i++)
+            {
+                if (l[i] >= 0)
+                {
+                    l[i] -= lV;
                 }
             }
 
-            return new Tuple<int[], int>(match, res);
+            return new Tuple<int, int[], int[]>(n, l, r);
         }
     }
 }
