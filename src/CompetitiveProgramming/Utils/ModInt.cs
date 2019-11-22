@@ -6,7 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 /// <summary>
-/// 重複組み合わせ: https://atcoder.jp/contests/abc021/tasks/abc021_d
+/// 組み合わせ(テーブル有+無): https://atcoder.jp/contests/abc145/tasks/abc145_d
+/// 重複組み合わせ(テーブル有+無): https://atcoder.jp/contests/abc021/tasks/abc021_d
 /// </summary>
 namespace CompetitiveProgramming.Utils
 {
@@ -195,27 +196,112 @@ namespace CompetitiveProgramming.Utils
         private int[] invs;
         // 階乗の逆元テーブル
         private int[] finvs;
+        // 繰り返し計算するならテーブルを作成する
+        // テーブル作るコストもそれなりに大きいので基本は作らない
+        private readonly int maxTableSize;
 
-        public ModCom(int mod = (int)1e9 + 7)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="mod"></param>
+        /// <param name="tableSize">作成するテーブル上限</param>
+        public ModCom(int mod = (int)1e9 + 7, int tableSize = 0)
         {
             M = mod;
-
-            factorials = Enumerable.Repeat(1, 2).ToArray();
-            invs = Enumerable.Repeat(1, 2).ToArray();
-            finvs = Enumerable.Repeat(1, 2).ToArray();
+            maxTableSize = tableSize;
         }
 
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        int Mul(int a, int b)
-            => (int)(((long)(a % M) * (b % M)) % M);
+        /// <summary>
+        /// 順列(nPr)
+        /// </summary>
+        public int Npr(int n, int r)
+        {
+            if (n < r || n < 0 || r < 0)
+            {
+                return 0;
+            }
+
+            if (n <= maxTableSize)
+            {
+                MakeTable(n);
+                if (factorials != null && n <= factorials.Length)
+                {
+                    return Mul(factorials[n], finvs[n - r]);
+                }
+            }
+
+            // テーブルがない or 範囲外のため計算する
+            // テーブルがある場合は続きから計算すると定数倍改善
+            int npr = 1;
+            for (int i = n; i > n - r; i--)
+            {
+                npr = Mul(npr, n);
+            }
+
+            return npr;
+        }
+
+        /// <summary>
+        /// 組み合わせ(nCr)
+        /// </summary>
+        public int Ncr(int n, int r)
+        {
+            if (n < r || n < 0 || r < 0)
+            {
+                return 0;
+            }
+
+            r = Math.Min(r, n - r);
+            if (n <= maxTableSize)
+            {
+                MakeTable(n);
+                if (factorials != null && n <= factorials.Length)
+                {
+                    return Mul(Npr(n, r), finvs[r]);
+                }
+            }
+
+            // テーブルがない or 範囲外のため計算する
+            // テーブルがある場合は続きから計算すると定数倍改善
+            int npr = 1, fact = 1;
+            for (int i = 0; i < r; i++)
+            {
+                npr = Mul(npr, n - i);
+                fact = Mul(fact, i + 1);
+            }
+
+            return Div(npr, fact);
+        }
+
+        /// <summary>
+        /// 重複組み合わせ(nHr)
+        /// n個から重複を許してr個取り出す
+        /// </summary>
+        public int Nhr(int n, int r)
+            => Ncr(n + r - 1, r);
 
         /// <summary>
         /// n以下の各テーブルを作成する
         /// </summary>
         void MakeTable(int n)
         {
-            int begin = factorials.Length;
-            if (n < begin) return;
+            if (n > maxTableSize)
+            {
+                throw new ArgumentOutOfRangeException();
+            }
+
+            if (factorials == null)
+            {
+                factorials = Enumerable.Repeat(1, 2).ToArray();
+                invs = Enumerable.Repeat(1, 2).ToArray();
+                finvs = Enumerable.Repeat(1, 2).ToArray();
+            }
+
+            if (n < factorials.Length)
+            {
+                return;
+            }
+            var begin = factorials.Length;
 
             Array.Resize(ref factorials, n + 1);
             Array.Resize(ref invs, n + 1);
@@ -229,30 +315,50 @@ namespace CompetitiveProgramming.Utils
             }
         }
 
+        #region Misc
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        int Mul(int a, int b)
+            => (int)(((long)(a % M) * (b % M)) % M);
+
+        /// <summary> a/b </summary>
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        int Div(int a, int b)
+            => Mul(a, Inverse(b));
+
         /// <summary>
-        /// 順列(nPr)
+        /// aの逆元（a^-1）
+        /// （厳密には違うが）Mは素数とする
         /// </summary>
-        public int Npr(int n, int r)
+        int Inverse(int a)
         {
-            if (n < r) return 0;
-            if (n < 0 || r < 0) return 0;
+            int b = M;
+            int u = 1, v = 0;
 
-            MakeTable(n);
+            while (b > 0)
+            {
+                int t = a / b;
+                a -= t * b;
+                Swap(ref a, ref b);
+                u -= t * v;
+                Swap(ref u, ref v);
+            }
 
-            return Mul(factorials[n], finvs[n - r]);
+            u %= M;
+            if (u < 0)
+            {
+                u += M;
+            }
+
+            return u;
         }
 
-        /// <summary>
-        /// 組み合わせ(nCr)
-        /// </summary>
-        public int Ncr(int n, int r)
-            => Mul(Npr(n, r), finvs[r]);
-
-        /// <summary>
-        /// 重複組み合わせ(nHr)
-        /// n個から重複を許してr個取り出す
-        /// </summary>
-        public int Nhr(int n, int r)
-            => Ncr(n + r - 1, r);
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        static void Swap<T>(ref T a, ref T b)
+        {
+            T t = a;
+            a = b;
+            b = t;
+        }
+        #endregion
     }
 }
