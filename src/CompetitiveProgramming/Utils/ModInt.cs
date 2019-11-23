@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -235,7 +235,7 @@ namespace CompetitiveProgramming.Utils
             int npr = 1;
             for (int i = n; i > n - r; i--)
             {
-                npr = Mul(npr, n);
+                npr = Mul(npr, i);
             }
 
             return npr;
