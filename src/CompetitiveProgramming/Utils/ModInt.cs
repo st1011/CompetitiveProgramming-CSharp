@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -6,7 +6,17 @@ using System.Text;
 using System.Threading.Tasks;
 
 /// <summary>
+/// 
+/// Add: https://atcoder.jp/contests/dp/tasks/dp_h
+/// Sub:
+/// Mul, Div: 組み合わせが抱合
+/// Power: http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=NTL_1_B&lang=ja
+/// Factorial: https://atcoder.jp/contests/arc076/tasks/arc076_a
+/// 順列: 組合わせが抱合
+/// 組合わせ: https://atcoder.jp/contests/abc034/tasks/abc034_c
+/// 
 /// 組み合わせ(テーブル有+無): https://atcoder.jp/contests/abc145/tasks/abc145_d
+/// 組み合わせ(テーブル有): https://atcoder.jp/contests/abc132/tasks/abc132_d
 /// 重複組み合わせ(テーブル有+無): https://atcoder.jp/contests/abc021/tasks/abc021_d
 /// </summary>
 namespace CompetitiveProgramming.Utils
@@ -30,10 +40,6 @@ namespace CompetitiveProgramming.Utils
             N = n % mod;
             M = mod;
         }
-
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        public static implicit operator int(ModInt a)
-            => a.N;
 
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static ModInt Add(int a, int b, int M)
@@ -76,8 +82,6 @@ namespace CompetitiveProgramming.Utils
             return new ModInt(u, M);
         }
 
-        public override string ToString() => N.ToString();
-
         /// <summary>
         /// x^y
         /// 繰り返し二乗法
@@ -97,7 +101,73 @@ namespace CompetitiveProgramming.Utils
             return r;
         }
 
+        public override string ToString() => N.ToString();
+
+        #region Combinatorics
+        /// <summary>
+        /// 階乗(n!)
+        /// </summary>
+        public static ModInt Factorial(int n, int M)
+        {
+            var fact = new ModInt(1, M);
+            while (n > 0)
+            {
+                fact *= n;
+                n--;
+            }
+
+            return fact;
+        }
+
+        /// <summary>
+        /// 順列(nPr)
+        /// </summary>
+        public static ModInt Npr(int n, int r, int M)
+        {
+            if (n < r || n < 0 || r < 0)
+            {
+                return new ModInt(0, M);
+            }
+
+            var npr = new ModInt(1, M);
+            for (int i = n; i > n - r; i--)
+            {
+                npr *= i;
+            }
+
+            return npr;
+        }
+
+        /// <summary>
+        /// 組み合わせ(nCr)
+        /// </summary>
+        public static ModInt Ncr(int n, int r, int M)
+        {
+            if (n < r || n < 0 || r < 0)
+            {
+                return new ModInt(0, M);
+            }
+
+            r = Math.Min(r, n - r);
+            var npr = Npr(n, r, M);
+            var fact = Factorial(r, M);
+
+            return npr / fact;
+        }
+
+        /// <summary>
+        /// 重複組み合わせ(nHr)
+        /// n個から重複を許してr個取り出す
+        /// </summary>
+        public static ModInt Nhr(int n, int r, int M)
+            => Ncr(n + r - 1, r, M);
+        #endregion
+
         #region Operator, Alias
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        public static implicit operator int(ModInt a)
+            => a.N;
+
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static ModInt operator +(ModInt a, int b)
             => Add(a, b, a.M);
@@ -170,6 +240,11 @@ namespace CompetitiveProgramming.Utils
             if (a.M != b.M) throw new ArgumentException();
             return Power(a, b, a.M);
         }
+
+        /// <summary> n! </summary>
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        public static ModInt Factorial(ModInt n)
+            => Factorial(n, n.M);
         #endregion
 
         #region Misc
