@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 /// <summary>
 /// http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=GRL_6_B&lang=jp
@@ -87,7 +85,7 @@ namespace CompetitiveProgramming.Utils
                     int v = p.V;
                     if (dist[v] < p.Dist) continue;
 
-                    for (int i = 0; i < G[v].Count(); i++)
+                    for (int i = 0; i < G[v].Count; i++)
                     {
                         var e = G[v][i];
                         var nc = dist[v] + e.Cost + h[v] - h[e.To];
@@ -107,7 +105,7 @@ namespace CompetitiveProgramming.Utils
                     return -1;
                 }
 
-                for (int i = 0; i < G.Count(); i++)
+                for (int i = 0; i < G.Length; i++)
                 {
                     h[i] += dist[i];
                 }
@@ -166,7 +164,7 @@ namespace CompetitiveProgramming.Utils
 
             public PriorityQueue(int capacity, bool isMinHeap = true)
             {
-                this.Heap = new List<T>(capacity);
+                Heap = new List<T>(capacity);
 
                 if (isMinHeap)
                 {
@@ -186,7 +184,7 @@ namespace CompetitiveProgramming.Utils
             /// <param name="item"></param>
             public void Push(T item)
             {
-                var n = Heap.Count();
+                var n = Heap.Count;
                 Heap.Add(item);
 
                 while (n > 0)
@@ -214,7 +212,7 @@ namespace CompetitiveProgramming.Utils
                 var item = Heap[0];
                 var last = Heap.Last();
 
-                var n = Heap.Count() - 1;
+                var n = Heap.Count - 1;
                 var parent = 0;
                 var child = 2 * parent + 1;
                 while (child < n)
@@ -243,25 +241,25 @@ namespace CompetitiveProgramming.Utils
             /// <returns></returns>
             public T Peek()
             {
-                if (!this.Heap.Any())
+                if (!Heap.Any())
                 {
                     throw new Exception();
                 }
 
-                return this.Heap[0];
+                return Heap[0];
             }
 
             /// <summary>
             /// ヒープに格納されているアイテム数
             /// </summary>
             /// <returns></returns>
-            public int Count() => this.Heap.Count();
+            public int Count() => Heap.Count;
 
             /// <summary>
             /// 一つでの値が格納されているか
             /// </summary>
             /// <returns></returns>
-            public bool Any() => this.Heap.Any();
+            public bool Any() => Heap.Any();
         }
         #endregion
     }

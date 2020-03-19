@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -25,9 +26,9 @@ namespace CompetitiveProgramming.Utils
     /// Mを法とする数値
     /// Mは素数
     /// </summary>
-    public struct ModInt
+    public struct ModInt : IEquatable<ModInt>
     {
-        public readonly int M;
+        public int M { get; private set; }
         private readonly int N;
 
         /// <summary>
@@ -101,7 +102,7 @@ namespace CompetitiveProgramming.Utils
             return r;
         }
 
-        public override string ToString() => N.ToString();
+        public override string ToString() => N.ToString(CultureInfo.InvariantCulture);
 
         #region Combinatorics
         /// <summary>
@@ -203,30 +204,34 @@ namespace CompetitiveProgramming.Utils
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static ModInt operator +(ModInt a, ModInt b)
         {
-            if (a.M != b.M) throw new ArgumentException();
+            if (a.M != b.M) throw new ArgumentException($"{a} and {b}");
             return Add(a, b, a.M);
         }
 
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static ModInt operator -(ModInt a, ModInt b)
         {
-            if (a.M != b.M) throw new ArgumentException();
+            if (a.M != b.M) throw new ArgumentException($"{a} and {b}");
             return Sub(a, b, a.M);
         }
 
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static ModInt operator *(ModInt a, ModInt b)
         {
-            if (a.M != b.M) throw new ArgumentException();
+            if (a.M != b.M) throw new ArgumentException($"{a} and {b}");
             return Mul(a, b, a.M);
         }
 
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static ModInt operator /(ModInt a, ModInt b)
         {
-            if (a.M != b.M) throw new ArgumentException();
+            if (a.M != b.M) throw new ArgumentException($"{a} and {b}");
             return Div(a, b, a.M);
         }
+
+        public static bool operator ==(ModInt left, ModInt right) => left.Equals(right);
+
+        public static bool operator !=(ModInt left, ModInt right) => !(left == right);
 
         /// <summary> a^b </summary>
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
@@ -237,7 +242,7 @@ namespace CompetitiveProgramming.Utils
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static ModInt Power(ModInt a, ModInt b)
         {
-            if (a.M != b.M) throw new ArgumentException();
+            if (a.M != b.M) throw new ArgumentException($"{a} and {b}");
             return Power(a, b, a.M);
         }
 
@@ -255,6 +260,28 @@ namespace CompetitiveProgramming.Utils
             a = b;
             b = temp;
         }
+
+        public override bool Equals(object obj)
+        {
+            return obj is ModInt && Equals((ModInt)obj);
+        }
+
+        public bool Equals(ModInt other)
+        {
+            return M == other.M &&
+                   N == other.N;
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = 1358463657;
+                hashCode = hashCode * -1521134295 + M.GetHashCode();
+                hashCode = hashCode * -1521134295 + N.GetHashCode();
+                return hashCode;
+            }
+        }
         #endregion
     }
 
@@ -264,7 +291,7 @@ namespace CompetitiveProgramming.Utils
     /// </summary>
     public class ModCom
     {
-        public readonly int M;
+        public int M { get; private set; }
         // 階乗テーブル
         private int[] factorials;
         // 逆元テーブル
@@ -362,7 +389,7 @@ namespace CompetitiveProgramming.Utils
         {
             if (n > maxTableSize)
             {
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException(nameof(n));
             }
 
             if (factorials == null)

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CompetitiveProgramming.Utils
 {
@@ -17,7 +15,7 @@ namespace CompetitiveProgramming.Utils
         /// <returns></returns>
         private static List<int> Bfs(List<List<int>> nodes, List<int> nodeEnter)
         {
-            var n = nodes.Count();
+            var n = nodes.Count;
 
             // （始点となる）誰からも接続されていないノードを追加する
             var q = new Queue<int>();

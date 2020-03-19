@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 // 二分探索(小数):
 // https://atcoder.jp/contests/abc034/tasks/abc034_d

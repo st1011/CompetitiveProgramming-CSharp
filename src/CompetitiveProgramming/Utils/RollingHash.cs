@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 /// <summary>
 /// BeginWith: http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ALDS1_14_B&lang=ja
@@ -19,7 +15,7 @@ namespace CompetitiveProgramming.Utils
         // 衝突防止で、複数個のmodを指定しておく
         static readonly long[] Mods = { 999999893, 999999937 };
 
-        public readonly string S;
+        public string S { get; private set; }
 
         readonly int Base;
         readonly long[,] Hashes;
@@ -33,6 +29,8 @@ namespace CompetitiveProgramming.Utils
         /// 指定しない場合は内部で乱数を使う</param>
         public RollingHash(string s, int b = 0)
         {
+            if (s == null) { throw new ArgumentNullException(nameof(s)); }
+
             S = s;
 
             if (b <= 0) { b = new Random().Next(0x111, 0x1111); }
@@ -48,7 +46,7 @@ namespace CompetitiveProgramming.Utils
         /// </summary>
         /// <param name="s">文字列</param>
         public RollingHash CreateComparable(string s)
-            => new RollingHash(s, this.Base);
+            => new RollingHash(s, Base);
 
         /// <summary>
         /// 演算用のテーブル初期化
@@ -96,8 +94,10 @@ namespace CompetitiveProgramming.Utils
         /// </summary>
         public bool Match(RollingHash other, int l1, int l2, int len)
         {
+            if (other == null) { throw new ArgumentNullException(nameof(other)); }
+
             // 範囲外
-            if (this.S.Length < l1 + len || other.S.Length < l2 + len)
+            if (S.Length < l1 + len || other.S.Length < l2 + len)
             {
                 return false;
             }
@@ -115,12 +115,13 @@ namespace CompetitiveProgramming.Utils
 
         /// <summary>
         /// 最長共通接頭辞の長さ
-        /// this.S[l1:]とother.S[l2:]
+        /// S[l1:]とother.S[l2:]
         /// </summary>
         public int GetLcp(RollingHash other, int l1, int l2)
         {
-            int len = Math.Min(S.Length - l1, other.S.Length - l2);
+            if (other == null) { throw new ArgumentNullException(nameof(other)); }
 
+            int len = Math.Min(S.Length - l1, other.S.Length - l2);
             int low = -1, high = len + 1;
             while (high - low > 1)
             {
@@ -146,9 +147,13 @@ namespace CompetitiveProgramming.Utils
             => GetLcp(this, l1, l2);
 
         /// <summary>
-        /// this.S[l1:]がotherで始まっているか
+        /// S[l1:]がotherで始まっているか
         /// </summary>
         public bool BeginWith(RollingHash other, int l1)
-            => Match(other, l1, 0, other.S.Length);
+        {
+            if (other == null) { throw new ArgumentNullException(nameof(other)); }
+
+            return Match(other, l1, 0, other.S.Length);
+        }
     }
 }

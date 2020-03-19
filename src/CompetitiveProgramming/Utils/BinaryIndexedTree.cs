@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq;
 
 namespace CompetitiveProgramming.Utils
 {
@@ -24,7 +19,7 @@ namespace CompetitiveProgramming.Utils
         public RangeSumQuery(int n, int v = 0)
         {
             N = n + 1;
-            this.Data = Enumerable.Repeat(v, N).ToArray();
+            Data = Enumerable.Repeat(v, N).ToArray();
         }
 
         /// <summary>

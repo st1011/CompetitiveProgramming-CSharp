@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 // ref. https://nodchip.hatenadiary.org/entry/20090303/1236058357
 

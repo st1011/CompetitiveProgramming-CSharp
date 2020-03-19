@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Dijkstra: http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=GRL_1_A&lang=jp
@@ -123,13 +121,13 @@ namespace CompetitiveProgramming.Utils
 
             public Edge(int to, long cost)
             {
-                this.To = to;
-                this.Cost = cost;
+                To = to;
+                Cost = cost;
             }
 
             public int CompareTo(Edge other)
             {
-                return this.Cost.CompareTo(other.Cost);
+                return Cost.CompareTo(other.Cost);
             }
         }
 
@@ -156,7 +154,7 @@ namespace CompetitiveProgramming.Utils
             /// <summary> 要素追加 </summary>
             public void Enqueue(T item)
             {
-                var n = Heap.Count();
+                var n = Heap.Count;
                 Heap.Add(item);
 
                 while (n > 0)
@@ -184,7 +182,7 @@ namespace CompetitiveProgramming.Utils
                 var item = Heap[0];
                 var last = Heap.Last();
 
-                var n = Heap.Count() - 1;
+                var n = Heap.Count - 1;
                 var parent = 0;
                 var child = 2 * parent + 1;
                 while (child < n)
@@ -215,20 +213,20 @@ namespace CompetitiveProgramming.Utils
             /// </summary>
             public T Peek()
             {
-                if (!this.Heap.Any()) throw new Exception();
+                if (!Heap.Any()) throw new Exception();
 
-                return this.Heap[0];
+                return Heap[0];
             }
 
             /// <summary>
             /// ヒープに格納されているアイテム数
             /// </summary>
-            public int Count() => this.Heap.Count();
+            public int Count() => Heap.Count;
 
             /// <summary>
             /// 一つでも値が格納されているか
             /// </summary>
-            public bool Any() => this.Heap.Any();
+            public bool Any() => Heap.Any();
         }
     }
 
@@ -287,7 +285,7 @@ namespace CompetitiveProgramming.Utils
         /// </remarks>
         public long[] ShortestPath(int s, bool needsDetail=false)
         {
-            var E = Edges.Count();
+            var E = Edges.Count;
             for (int i = 0; i < V; i++)
             {
                 Dist[i] = Inf;

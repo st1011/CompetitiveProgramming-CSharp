@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CompetitiveProgramming.Utils
 {
-    public class Time
+    public static class Time
     {
         public static void Measure(Action action, int repeat = 100)
         {

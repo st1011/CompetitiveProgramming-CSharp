@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Collections;
 
 namespace CompetitiveProgramming.Utils
 {
@@ -19,6 +16,8 @@ namespace CompetitiveProgramming.Utils
         /// <returns>list.Count()との比較結果は不定です</returns>
         public static List<T> Sort<T>(IReadOnlyList<T> list, Comparison<T> comparison = null)
         {
+            if (list == null) { throw new ArgumentNullException(nameof(list)); }
+
             var dest = new List<T>();
 
             if (!list.Any())

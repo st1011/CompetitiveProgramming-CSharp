@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CompetitiveProgramming.Utils
 {
@@ -50,9 +47,9 @@ namespace CompetitiveProgramming.Utils
         /// <param name="monoid"></param>
         /// <param name="ignorableValue"></param>
         public SegTree(IReadOnlyList<T> ie, Func<T, T, T> monoid, T ignorableValue)
-            : this(ie.Count(), monoid, ignorableValue, ignorableValue)
+            : this(ie.Count, monoid, ignorableValue, ignorableValue)
         {
-            var n = ie.Count();
+            var n = ie.Count;
 
             // 実データの上書き
             for (int i = 0; i < n; i++)
@@ -415,8 +412,8 @@ namespace CompetitiveProgramming.Utils
             N = 1;
             while (N < n) N *= 2;
 
-            this.All = Enumerable.Repeat(v, 2 * N - 1).ToArray();
-            this.Part = Enumerable.Repeat(v, 2 * N - 1).ToArray();
+            All = Enumerable.Repeat(v, 2 * N - 1).ToArray();
+            Part = Enumerable.Repeat(v, 2 * N - 1).ToArray();
         }
 
         /// <summary>

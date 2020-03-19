@@ -1,74 +1,79 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CompetitiveProgramming.Utils
 {
     /// <summary>
     /// 値を書き換えやすいなTupleぐらいのイメージ
     /// </summary>
-    public class Pair<T, U> : IComparable<Pair<T, U>>, IEquatable<Pair<T, U>>
-        where T : IComparable<T>
-        where U : IComparable<U>
+    public class Pair<T1, T2> : IComparable<Pair<T1, T2>>, IEquatable<Pair<T1, T2>> where T1 : IComparable<T1>
+        where T2 : IComparable<T2>
     {
-        public T V1 { get; set; }
-        public U V2 { get; set; }
+        public T1 V1 { get; set; }
+        public T2 V2 { get; set; }
 
-        public Pair(T v1, U v2)
+        public Pair(T1 v1, T2 v2)
         {
-            this.V1 = v1;
-            this.V2 = v2;
+            V1 = v1;
+            V2 = v2;
         }
 
-        public Pair(Pair<T, U> src) : this(src.V1, src.V2) { }
-
-        public int CompareTo(Pair<T, U> other)
+        public Pair(Pair<T1, T2> src)
         {
-            var r = this.V1.CompareTo(other.V1);
-            if (r == 0) r = this.V2.CompareTo(other.V2);
+            if (src == null) { throw new ArgumentNullException(nameof(src)); }
+
+            V1 = src.V1;
+            V2 = src.V2;
+        }
+
+        public int CompareTo(Pair<T1, T2> other)
+        {
+            if (other == null) { throw new ArgumentNullException(nameof(other)); }
+
+            var r = V1.CompareTo(other.V1);
+            if (r == 0) r = V2.CompareTo(other.V2);
 
             return r;
         }
 
-        public bool Equals(Pair<T, U> other)
-            => (other != null && this.CompareTo(other) == 0);
 
         public override string ToString()
             => $"{V1} {V2}";
 
         public override bool Equals(object obj)
-            => Equals(obj as Pair<T, U>);
+        {
+            return Equals(obj as Pair<T1, T2>);
+        }
+
+        public bool Equals(Pair<T1, T2> other)
+        {
+            return other != null &&
+                   EqualityComparer<T1>.Default.Equals(V1, other.V1) &&
+                   EqualityComparer<T2>.Default.Equals(V2, other.V2);
+        }
 
         public override int GetHashCode()
         {
-            var hashCode = 1989511945;
-            hashCode = hashCode * -1521134295 + V1.GetHashCode();
-            hashCode = hashCode * -1521134295 + V2.GetHashCode();
-            return hashCode;
-        }
-
-        public static bool operator ==(Pair<T, U> a, Pair<T, U> b)
-        {
-            if (object.ReferenceEquals(a, null))
+            unchecked
             {
-                return object.ReferenceEquals(b, null);
+                var hashCode = 1989511945;
+                hashCode = hashCode * -1521134295 + EqualityComparer<T1>.Default.GetHashCode(V1);
+                hashCode = hashCode * -1521134295 + EqualityComparer<T2>.Default.GetHashCode(V2);
+                return hashCode;
             }
-
-            return a.Equals(b);
         }
 
-        public static bool operator !=(Pair<T, U> a, Pair<T, U> b)
+        public static bool operator ==(Pair<T1, T2> a, Pair<T1, T2> b)
+            => a != null && a.Equals(b);
+        public static bool operator !=(Pair<T1, T2> a, Pair<T1, T2> b)
             => !(a == b);
-        public static bool operator <(Pair<T, U> a, Pair<T, U> b)
-            => a.CompareTo(b) < 0;
-        public static bool operator <=(Pair<T, U> a, Pair<T, U> b)
-            => a.CompareTo(b) <= 0;
-        public static bool operator >(Pair<T, U> a, Pair<T, U> b)
-            => a.CompareTo(b) > 0;
-        public static bool operator >=(Pair<T, U> a, Pair<T, U> b)
-            => a.CompareTo(b) >= 0;
+        public static bool operator <(Pair<T1, T2> a, Pair<T1, T2> b)
+            => a?.CompareTo(b) < 0;
+        public static bool operator <=(Pair<T1, T2> a, Pair<T1, T2> b)
+            => a?.CompareTo(b) <= 0;
+        public static bool operator >(Pair<T1, T2> a, Pair<T1, T2> b)
+            => a?.CompareTo(b) > 0;
+        public static bool operator >=(Pair<T1, T2> a, Pair<T1, T2> b)
+            => a?.CompareTo(b) >= 0;
     }
 }

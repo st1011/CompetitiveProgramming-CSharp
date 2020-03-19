@@ -19,10 +19,10 @@ namespace CompetitiveProgramming.Utils
         /// <param name="size">ノードの総数</param>
         public UnionFind(int size)
         {
-            this.Rank = new int[size];
-            this.Size = Enumerable.Repeat(1, size).ToArray();
-            this.ParentId = Enumerable.Range(0, size).ToArray();
-            this.DiffWeight = new int[size];
+            Rank = new int[size];
+            Size = Enumerable.Repeat(1, size).ToArray();
+            ParentId = Enumerable.Range(0, size).ToArray();
+            DiffWeight = new int[size];
         }
 
         /// <summary>
@@ -43,15 +43,15 @@ namespace CompetitiveProgramming.Utils
         /// <returns></returns>
         public int FindRoot(int x)
         {
-            if (x != this.ParentId[x])
+            if (x != ParentId[x])
             {
                 // 経路中のノードのパラメータを更新しておく
-                var root = FindRoot(this.ParentId[x]);
-                this.DiffWeight[x] += this.DiffWeight[this.ParentId[x]];
-                this.ParentId[x] = root;
+                var root = FindRoot(ParentId[x]);
+                DiffWeight[x] += DiffWeight[ParentId[x]];
+                ParentId[x] = root;
             }
 
-            return this.ParentId[x];
+            return ParentId[x];
         }
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace CompetitiveProgramming.Utils
         {
             FindRoot(x);
 
-            return this.DiffWeight[x];
+            return DiffWeight[x];
         }
 
         /// <summary>
@@ -92,21 +92,21 @@ namespace CompetitiveProgramming.Utils
 
             if (x == y) return;
 
-            if (this.Rank[x] < this.Rank[y])
+            if (Rank[x] < Rank[y])
             {
-                this.ParentId[x] = y;
-                this.Size[y] += this.Size[x];
-                this.DiffWeight[x] = -w;
+                ParentId[x] = y;
+                Size[y] += Size[x];
+                DiffWeight[x] = -w;
             }
             else
             {
-                this.ParentId[y] = x;
-                this.Size[x] += this.Size[y];
-                this.DiffWeight[y] = w;
+                ParentId[y] = x;
+                Size[x] += Size[y];
+                DiffWeight[y] = w;
 
-                if (this.Rank[x] == this.Rank[y])
+                if (Rank[x] == Rank[y])
                 {
-                    this.Rank[x]++;
+                    Rank[x]++;
                 }
             }
         }
@@ -120,7 +120,7 @@ namespace CompetitiveProgramming.Utils
         {
             x = FindRoot(x);
 
-            return this.Size[x];
+            return Size[x];
         }
     }
 
@@ -138,9 +138,9 @@ namespace CompetitiveProgramming.Utils
 
             public Node(T item, int rank, int parent)
             {
-                this.Item = item;
-                this.Rank = rank;
-                this.ParentId = parent;
+                Item = item;
+                Rank = rank;
+                ParentId = parent;
             }
         }
 
@@ -148,13 +148,13 @@ namespace CompetitiveProgramming.Utils
 
         public UnionFind(int size)
         {
-            this.Nodes = Enumerable.Range(0, size)
+            Nodes = Enumerable.Range(0, size)
                 .Select(x => new Node(new T(), 0, x)).ToList();
         }
 
         public UnionFind(IEnumerable<T> items)
         {
-            this.Nodes = items.Select((x, i) => new { Item = x, Index = i })
+            Nodes = items.Select((x, i) => new { Item = x, Index = i })
                 .Select(x => new Node(x.Item, 0, x.Index)).ToList();
         }
 
@@ -165,13 +165,13 @@ namespace CompetitiveProgramming.Utils
 
         public int FindRoot(int x)
         {
-            if (x != this.Nodes[x].ParentId)
+            if (x != Nodes[x].ParentId)
             {
                 // 経路中のノードのparentを更新しておく
-                this.Nodes[x].ParentId = FindRoot(this.Nodes[x].ParentId);
+                Nodes[x].ParentId = FindRoot(Nodes[x].ParentId);
             }
 
-            return this.Nodes[x].ParentId;
+            return Nodes[x].ParentId;
         }
 
         public void Merge(int x, int y)
@@ -181,17 +181,17 @@ namespace CompetitiveProgramming.Utils
 
             if (x == y) return;
 
-            if (this.Nodes[y].Rank < this.Nodes[x].Rank)
+            if (Nodes[y].Rank < Nodes[x].Rank)
             {
-                this.Nodes[y].ParentId = x;
+                Nodes[y].ParentId = x;
             }
             else
             {
-                this.Nodes[x].ParentId = y;
+                Nodes[x].ParentId = y;
 
-                if (this.Nodes[x].Rank == this.Nodes[y].Rank)
+                if (Nodes[x].Rank == Nodes[y].Rank)
                 {
-                    this.Nodes[y].Rank++;
+                    Nodes[y].Rank++;
                 }
             }
         }

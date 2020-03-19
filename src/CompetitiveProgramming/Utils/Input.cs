@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CompetitiveProgramming.Utils
 {
-    public class Input
+    public class Input : IDisposable
     {
         // 変な改行コードがたまに混じっているので、一応セパレート指定する
         // スペース単独指定の方がもちろん早い
@@ -31,6 +30,7 @@ namespace CompetitiveProgramming.Utils
         /// </summary>
         public void SetText(IEnumerable<string> items)
         {
+            if (items == null) { throw new ArgumentNullException(nameof(items)); }
             foreach (var item in items)
                 SetText(item);
         }
@@ -80,15 +80,15 @@ namespace CompetitiveProgramming.Utils
         /// </summary>
         bool Accumulate(int n)
         {
-            while (queue.Count() < n)
+            while (queue.Count < n)
                 if (!Read()) return false;
 
             return true;
         }
 
-        public int NextInt() => int.Parse(Next());
-        public long NextLong() => long.Parse(Next());
-        public double NextDouble() => double.Parse(Next());
+        public int NextInt() => int.Parse(Next(), CultureInfo.InvariantCulture);
+        public long NextLong() => long.Parse(Next(), CultureInfo.InvariantCulture);
+        public double NextDouble() => double.Parse(Next(), CultureInfo.InvariantCulture);
 
         /// <summary>
         /// n個の要素をparseして、それぞれにoffsetをaddした配列を返す
@@ -109,5 +109,28 @@ namespace CompetitiveProgramming.Utils
         public int[] NextInt(int n, int offset = 0) => NextT(n, offset, int.Parse, (x, y) => x + y);
         public long[] NextLong(int n, long offset = 0) => NextT(n, offset, long.Parse, (x, y) => x + y);
         public double[] NextDouble(int n, double offset = 0.0) => NextT(n, offset, double.Parse, (x, y) => x + y);
+
+        #region IDisposable Support
+        private bool disposedValue = false; // 重複する呼び出しを検出するには
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    sr.Dispose();
+                }
+
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+        #endregion
     }
 }

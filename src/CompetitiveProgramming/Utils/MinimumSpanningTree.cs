@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CompetitiveProgramming.Utils
 {
@@ -29,10 +27,10 @@ namespace CompetitiveProgramming.Utils
             /// <param name="size">ノードの総数</param>
             public UnionFind(int size)
             {
-                this.Rank = new int[size];
-                this.Size = Enumerable.Repeat(1, size).ToArray();
-                this.ParentId = Enumerable.Range(0, size).ToArray();
-                this.DiffWeight = new int[size];
+                Rank = new int[size];
+                Size = Enumerable.Repeat(1, size).ToArray();
+                ParentId = Enumerable.Range(0, size).ToArray();
+                DiffWeight = new int[size];
             }
 
             /// <summary>
@@ -53,15 +51,15 @@ namespace CompetitiveProgramming.Utils
             /// <returns></returns>
             public int FindRoot(int x)
             {
-                if (x != this.ParentId[x])
+                if (x != ParentId[x])
                 {
                     // 経路中のノードのパラメータを更新しておく
-                    var root = FindRoot(this.ParentId[x]);
-                    this.DiffWeight[x] += this.DiffWeight[this.ParentId[x]];
-                    this.ParentId[x] = root;
+                    var root = FindRoot(ParentId[x]);
+                    DiffWeight[x] += DiffWeight[ParentId[x]];
+                    ParentId[x] = root;
                 }
 
-                return this.ParentId[x];
+                return ParentId[x];
             }
 
             /// <summary>
@@ -73,7 +71,7 @@ namespace CompetitiveProgramming.Utils
             {
                 FindRoot(x);
 
-                return this.DiffWeight[x];
+                return DiffWeight[x];
             }
 
             /// <summary>
@@ -102,21 +100,21 @@ namespace CompetitiveProgramming.Utils
 
                 if (x == y) return;
 
-                if (this.Rank[x] < this.Rank[y])
+                if (Rank[x] < Rank[y])
                 {
-                    this.ParentId[x] = y;
-                    this.Size[y] += this.Size[x];
-                    this.DiffWeight[x] = -w;
+                    ParentId[x] = y;
+                    Size[y] += Size[x];
+                    DiffWeight[x] = -w;
                 }
                 else
                 {
-                    this.ParentId[y] = x;
-                    this.Size[x] += this.Size[y];
-                    this.DiffWeight[y] = w;
+                    ParentId[y] = x;
+                    Size[x] += Size[y];
+                    DiffWeight[y] = w;
 
-                    if (this.Rank[x] == this.Rank[y])
+                    if (Rank[x] == Rank[y])
                     {
-                        this.Rank[x]++;
+                        Rank[x]++;
                     }
                 }
             }
@@ -130,26 +128,26 @@ namespace CompetitiveProgramming.Utils
             {
                 x = FindRoot(x);
 
-                return this.Size[x];
+                return Size[x];
             }
         }
 
         public struct Edge : IComparable<Edge>
         {
-            public int v1;
-            public int v2;
+            public int V1;
+            public int V2;
             public int Cost;
 
             public Edge(int v1, int v2, int cost)
             {
-                this.v1 = v1;
-                this.v2 = v2;
-                this.Cost = cost;
+                V1 = v1;
+                V2 = v2;
+                Cost = cost;
             }
 
             public int CompareTo(Edge other)
             {
-                return this.Cost - other.Cost;
+                return Cost - other.Cost;
             }
         }
 
@@ -184,15 +182,15 @@ namespace CompetitiveProgramming.Utils
         /// <returns></returns>
         public List<Edge> MinimumSpanningTree()
         {
-            this.es.Sort();
+            es.Sort();
 
             var uf = new UnionFind(V);
             var tree = new List<Edge>();
-            foreach (var edge in this.es)
+            foreach (var edge in es)
             {
-                if (!uf.Same(edge.v1, edge.v2))
+                if (!uf.Same(edge.V1, edge.V2))
                 {
-                    uf.Merge(edge.v1, edge.v2);
+                    uf.Merge(edge.V1, edge.V2);
                     tree.Add(edge);
                 }
             }

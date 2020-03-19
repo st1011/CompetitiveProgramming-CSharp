@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 /// <summary>
 /// https://code-festival-2014-qualb.contest.atcoder.jp/tasks/code_festival_qualB_d
@@ -35,12 +32,12 @@ namespace CompetitiveProgramming.Utils
             Monoid = monoid;
 
             var b = 0;
-            while ((1 << b) <= ie.Count())
+            while ((1 << b) <= ie.Count)
             {
                 ++b;
             }
 
-            lookupTable = new int[ie.Count() + 1];
+            lookupTable = new int[ie.Count + 1];
             for (var i = 2; i < lookupTable.Length; i++)
             {
                 lookupTable[i] = lookupTable[i >> 1] + 1;
@@ -51,7 +48,7 @@ namespace CompetitiveProgramming.Utils
             st = Enumerable.Range(0, b)
                 .Select(_ => new T[l2])
                 .ToArray();
-            for (var i = 0; i < ie.Count(); i++)
+            for (var i = 0; i < ie.Count; i++)
             {
                 st[0][i] = ie[i];
             }

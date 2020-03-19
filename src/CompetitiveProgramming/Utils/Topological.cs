@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CompetitiveProgramming.Utils
 {
@@ -42,15 +39,15 @@ namespace CompetitiveProgramming.Utils
         public int[] Sort()
         {
             // 各頂点の出自数
-            var degs = new int[es.Count()];
+            var degs = new int[es.Count];
             // 便宜上、逆向きの辺一覧
-            var edges = Enumerable.Repeat(0, es.Count())
+            var edges = Enumerable.Repeat(0, es.Count)
                 .Select(_ => new List<int>())
                 .ToArray();
             // 出次数0の頂点一覧
             var q = new Queue<int>();
 
-            for (int i = 0; i < es.Count(); i++)
+            for (int i = 0; i < es.Count; i++)
             {
                 if (!es[i].Any())
                 {
@@ -58,7 +55,7 @@ namespace CompetitiveProgramming.Utils
                     continue;
                 }
 
-                for (int j = 0; j < es[i].Count(); j++)
+                for (int j = 0; j < es[i].Count; j++)
                 {
                     degs[i]++;
                     edges[es[i][j]].Add(i);

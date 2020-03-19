@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-/// <summary>
+﻿/// <summary>
 /// https://judge.yosupo.jp/problem/sqrt_mod
 /// </summary>
 namespace CompetitiveProgramming.Utils

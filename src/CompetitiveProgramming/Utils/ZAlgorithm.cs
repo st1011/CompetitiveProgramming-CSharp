@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-/// <summary>
+﻿/// <summary>
 /// https://atcoder.jp/contests/abc141/tasks/abc141_e
 /// https://judge.yosupo.jp/problem/zalgorithm
 /// </summary>

@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CompetitiveProgramming.TypicalProblem
 {
@@ -30,7 +27,7 @@ namespace CompetitiveProgramming.TypicalProblem
 
         static Answer Solve(long wsize, List<Item> items)
         {
-            var n = items.Count();
+            var n = items.Count;
             // [i][w] iまでのitemで、wを超えない範囲で最大の価値
             var c = new long[n + 1, wsize + 1];
             var g = new bool[n + 1, wsize + 1];

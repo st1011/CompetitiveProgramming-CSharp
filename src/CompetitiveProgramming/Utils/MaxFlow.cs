@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 /// <summary>
 /// 最大フロー: http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=GRL_6_A&lang=jp
@@ -27,9 +25,9 @@ namespace CompetitiveProgramming.Utils
 
             public Edge(int to, int cap, int r)
             {
-                this.To = to;
-                this.Capacity = cap;
-                this.Rev = r;
+                To = to;
+                Capacity = cap;
+                Rev = r;
             }
         }
 
@@ -78,7 +76,7 @@ namespace CompetitiveProgramming.Utils
             while (q.Any())
             {
                 var v = q.Dequeue();
-                for (int i = 0; i < G[v].Count(); i++)
+                for (int i = 0; i < G[v].Count; i++)
                 {
                     var e = G[v][i];
                     if (e.Capacity > 0 && Level[e.To] < 0)
@@ -93,7 +91,7 @@ namespace CompetitiveProgramming.Utils
         int Dfs(int v, int t, int f)
         {
             if (v == t) return f;
-            for (int i = Iter[v]; i < G[v].Count(); Iter[v] = ++i)
+            for (int i = Iter[v]; i < G[v].Count; Iter[v] = ++i)
             {
                 var e = G[v][i];
                 if (e.Capacity > 0 && Level[v] < Level[e.To])

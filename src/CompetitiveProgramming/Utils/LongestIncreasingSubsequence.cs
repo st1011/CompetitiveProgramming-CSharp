@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 /// <summary>
 /// LIS(Strong): http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=DPL_1_D
@@ -26,10 +24,10 @@ namespace CompetitiveProgramming.Utils
         /// <returns></returns>
         public static int LisLength<T>(IReadOnlyList<T> nums, T inf, bool isStrong = true) where T : IComparable<T>
         {
-            if (nums.Count() <= 0) return 0;
+            if (!nums.Any()) return 0;
 
             var bound = isStrong ? (Func<IList<T>, T, int>)Search.LowerBound : Search.UpperBound;
-            var dp = Enumerable.Repeat(inf, nums.Count()).ToList();
+            var dp = Enumerable.Repeat(inf, nums.Count).ToList();
             foreach (var current in nums)
             {
                 var i = bound(dp, current);
@@ -72,7 +70,10 @@ namespace CompetitiveProgramming.Utils
             {
                 int low = begin, high = end;
 
-                if (low > high) { throw new ArgumentException(); }
+                if (low > high)
+                {
+                    throw new ArgumentException($"{nameof(low)} greater than {nameof(high)}", $"{nameof(low)} and {nameof(high)}");
+                }
 
                 while (low < high)
                 {
@@ -95,7 +96,7 @@ namespace CompetitiveProgramming.Utils
             /// v以上で最小のインデックスを返す
             /// </summary>
             public static int LowerBound<T>(IList<T> list, T v) where T : IComparable<T>
-                => LowerBound<T>(list, v, 0, list.Count());
+                => LowerBound<T>(list, v, 0, list.Count);
 
             /// <summary>
             /// vより大きな最小のインデックスを返す
@@ -107,7 +108,7 @@ namespace CompetitiveProgramming.Utils
             /// vより大きな最小のインデックスを返す
             /// </summary>
             public static int UpperBound<T>(IList<T> list, T v) where T : IComparable<T>
-                => UpperBound(list, v, 0, list.Count());
+                => UpperBound(list, v, 0, list.Count);
         }
     }
 }

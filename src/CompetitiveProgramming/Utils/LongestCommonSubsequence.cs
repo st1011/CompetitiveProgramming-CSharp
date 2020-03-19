@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Length: http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ALDS1_10_C&lang=ja
@@ -24,6 +21,9 @@ namespace CompetitiveProgramming.Utils
 
         public LongestCommonSubsequence(IReadOnlyList<T> x, IReadOnlyList<T> y)
         {
+            if (x == null) { throw new ArgumentNullException(nameof(x)); }
+            if (y == null) { throw new ArgumentNullException(nameof(y)); }
+
             X = x;
             Y = y;
 
