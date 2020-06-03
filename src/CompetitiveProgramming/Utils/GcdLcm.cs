@@ -1,6 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
+/// <summary>
+/// GCD\LCM: http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=0005&lang=ja
+/// ExGCD: http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=NTL_1_E&lang=ja
+/// 
+/// </summary>
 namespace CompetitiveProgramming.Utils
 {
     /// <summary>

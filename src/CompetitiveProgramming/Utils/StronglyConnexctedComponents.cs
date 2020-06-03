@@ -1,6 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
+/// <summary>
+/// http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=GRL_3_C&lang=ja
+/// </summary>
 namespace CompetitiveProgramming.Utils
 {
     /// <summary>

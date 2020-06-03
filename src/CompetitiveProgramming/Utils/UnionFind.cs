@@ -1,6 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
+/// <summary>
+/// 同一集合判定: http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=DSL_1_A&lang=ja
+/// 重みの差: http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=DSL_1_B&lang=ja
+/// </summary>
 namespace CompetitiveProgramming.Utils
 {
     /// <summary>
