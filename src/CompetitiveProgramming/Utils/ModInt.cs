@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -102,7 +101,7 @@ namespace CompetitiveProgramming.Utils
             return r;
         }
 
-        public override string ToString() => N.ToString(CultureInfo.InvariantCulture);
+        public override string ToString() => N.ToString(System.Globalization.CultureInfo.InvariantCulture);
 
         #region Combinatorics
         /// <summary>
