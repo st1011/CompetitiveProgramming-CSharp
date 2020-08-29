@@ -66,7 +66,6 @@
     <Compile Include="Utils\ZAlgorithm.cs" />
     <Compile Include="Utils\TernarySearch.cs" />
     <Compile Include="Utils\LowestCommonAncestor.cs" />
-    <Compile Include="Utils\Divisor.cs" />
     <Compile Include="Utils\BinaryIndexedTree.cs" />
     <Compile Include="Utils\BipartiteMaximumMatching.cs" />
     <Compile Include="Utils\MicCostFlow.cs" />
@@ -83,10 +82,9 @@
     <Compile Include="Utils\LongestPath.cs" />
     <Compile Include="Utils\MinimumSpanningTree.cs" />
     <Compile Include="Utils\ModInt.cs" />
-    <Compile Include="Utils\GcdLcm.cs" />
+    <Compile Include="Utils\MathEx.cs" />
     <Compile Include="Utils\Pair.cs" />
     <Compile Include="Utils\Permutation.cs" />
-    <Compile Include="Utils\Prime.cs" />
     <Compile Include="Utils\PriorityQueue.cs" />
     <Compile Include="Utils\Search.cs" />
     <Compile Include="Utils\SegmentTree.cs" />
