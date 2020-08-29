@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace CompetitiveProgramming.Utils
 {
-    public class Input : IDisposable
+    public class InputBuffer : IDisposable
     {
         // 変な改行コードがたまに混じっているので、一応セパレート指定する
         // スペース単独指定の方がもちろん早い
@@ -17,7 +17,7 @@ namespace CompetitiveProgramming.Utils
         /// <summary>
         /// 特定のファイルから読み出したい場合はpath指定する
         /// </summary>
-        public Input(string path = "")
+        public InputBuffer(string path = "")
         {
             _queue = new Queue<string>();
 
