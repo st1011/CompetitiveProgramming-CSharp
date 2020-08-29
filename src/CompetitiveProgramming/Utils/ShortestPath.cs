@@ -16,18 +16,18 @@ namespace CompetitiveProgramming.Utils
     /// 重み付き・有向グラフの単一始点最短経路
     /// 辺の重みは非負数だけ
     /// </summary>
-    class Dijkstra
+    public class Dijkstra
     {
-        const long Inf = long.MaxValue / 3;
+        private const long _inf = long.MaxValue / 3;
 
         // ノード数
-        readonly int V;
+        private readonly int _nodeCount;
         // 隣接リスト
-        readonly List<List<Edge>> Edges;
+        private readonly List<List<Edge>> _edges;
         // 前回の最短経路結果
-        readonly long[] Dist;
+        private readonly long[] _dist;
         // 経路復元用情報
-        readonly int[] Prev;
+        private readonly int[] _prev;
 
         /// <summary>
         /// 
@@ -35,36 +35,36 @@ namespace CompetitiveProgramming.Utils
         /// <param name="v">ノード数</param>
         public Dijkstra(int v)
         {
-            Edges = Enumerable.Repeat(0, v)
+            _edges = Enumerable.Repeat(0, v)
                 .Select(_ => new List<Edge>())
                 .ToList();
-            Dist = new long[v];
-            Prev = new int[v];
+            _dist = new long[v];
+            _prev = new int[v];
 
-            V = v;
+            _nodeCount = v;
         }
 
         /// <summary>
         /// 経路追加
         /// </summary>
         public void AddPath(int from, int to, long cost)
-            => Edges[from].Add(new Edge(to, cost));
+            => _edges[from].Add(new Edge(to, cost));
 
         /// <summary>
         /// sから各ノードへの最短経路
         /// </summary>
         public long[] ShortestPath(int s)
         {
-            for (int i = 0; i < V; i++)
+            for (int i = 0; i < _nodeCount; i++)
             {
-                Dist[i] = Inf;
-                Prev[i] = -1;
+                _dist[i] = _inf;
+                _prev[i] = -1;
             }
 
             // 昇順ソートにする
             var pq = new PriorityQueue<Edge>((x, y) => y.CompareTo(x));
 
-            Dist[s] = 0;
+            _dist[s] = 0;
             pq.Push(new Edge(s, 0));
 
             while (pq.Any())
@@ -73,21 +73,21 @@ namespace CompetitiveProgramming.Utils
                 var v = p.To;
 
                 // 他の経路の方がコストが低い
-                if (Dist[v] < p.Cost) continue;
+                if (_dist[v] < p.Cost) continue;
 
-                foreach (var e in Edges[v])
+                foreach (var e in _edges[v])
                 {
-                    if (Dist[e.To] > Dist[v] + e.Cost)
+                    if (_dist[e.To] > _dist[v] + e.Cost)
                     {
                         // こっちの経路の方が効率的
-                        Dist[e.To] = Dist[v] + e.Cost;
-                        Prev[e.To] = v;
-                        pq.Push(new Edge(e.To, Dist[e.To]));
+                        _dist[e.To] = _dist[v] + e.Cost;
+                        _prev[e.To] = v;
+                        pq.Push(new Edge(e.To, _dist[e.To]));
                     }
                 }
             }
 
-            return Dist;
+            return _dist;
         }
 
         /// <summary>
@@ -97,13 +97,13 @@ namespace CompetitiveProgramming.Utils
         /// <returns>探索したことがないときはnull</returns>
         public int[] RestorePath(int t)
         {
-            if (Prev == null) return null;
+            if (_prev == null) return null;
 
             var stack = new Stack<int>();
             while (t >= 0)
             {
                 stack.Push(t);
-                t = Prev[t];
+                t = _prev[t];
             }
 
             return stack.ToArray();
@@ -112,9 +112,9 @@ namespace CompetitiveProgramming.Utils
         /// <summary>
         /// 接続されているか?
         /// </summary>
-        public bool IsConnected(int e) => Dist[e] != Inf;
+        public bool IsConnected(int e) => _dist[e] != _inf;
 
-        struct Edge : IComparable<Edge>
+        private struct Edge : IComparable<Edge>
         {
             public int To;
             public long Cost;
@@ -135,38 +135,38 @@ namespace CompetitiveProgramming.Utils
         /// 優先度付きキュー(二分ヒープ)
         /// デフォルトは降順ソート
         /// </summary>
-        class PriorityQueue<T>
+        private class PriorityQueue<T>
         {
-            static readonly int DefaultCapacity = 8;
-            readonly List<T> Heap;
-            readonly Comparison<T> Comparer;
+            private const int _defaultCapacity = 8;
+            private readonly List<T> _heap;
+            private readonly Comparison<T> _comparer;
 
             public PriorityQueue(int capacity, Comparison<T> comparer)
             {
-                Heap = new List<T>(capacity);
-                Comparer = comparer;
+                _heap = new List<T>(capacity);
+                _comparer = comparer;
             }
 
-            public PriorityQueue() : this(DefaultCapacity) { }
+            public PriorityQueue() : this(_defaultCapacity) { }
             public PriorityQueue(int capacity) : this(capacity, Comparer<T>.Default.Compare) { }
-            public PriorityQueue(Comparison<T> comparer) : this(DefaultCapacity, comparer) { }
+            public PriorityQueue(Comparison<T> comparer) : this(_defaultCapacity, comparer) { }
 
             /// <summary> 要素追加 </summary>
             public void Enqueue(T item)
             {
-                var n = Heap.Count;
-                Heap.Add(item);
+                var n = _heap.Count;
+                _heap.Add(item);
 
                 while (n > 0)
                 {
                     var parent = (n - 1) / 2;
-                    if (Comparer(Heap[parent], item) > 0) break;
+                    if (_comparer(_heap[parent], item) > 0) break;
 
-                    Heap[n] = Heap[parent];
+                    _heap[n] = _heap[parent];
                     n = parent;
                 }
 
-                Heap[n] = item;
+                _heap[n] = item;
             }
 
             /// <summary> 要素追加 </summary>
@@ -175,32 +175,32 @@ namespace CompetitiveProgramming.Utils
             /// <summary> 先頭の値を取得し削除する </summary>
             public T Dequeue()
             {
-                if (!Heap.Any())
+                if (!_heap.Any())
                 {
                     throw new Exception();
                 }
-                var item = Heap[0];
-                var last = Heap.Last();
+                var item = _heap[0];
+                var last = _heap.Last();
 
-                var n = Heap.Count - 1;
+                var n = _heap.Count - 1;
                 var parent = 0;
                 var child = 2 * parent + 1;
                 while (child < n)
                 {
-                    if (child + 1 < n && Comparer(Heap[child + 1], Heap[child]) > 0)
+                    if (child + 1 < n && _comparer(_heap[child + 1], _heap[child]) > 0)
                     {
                         child++;
                     }
 
-                    if (Comparer(last, Heap[child]) > 0) break;
+                    if (_comparer(last, _heap[child]) > 0) break;
 
-                    Heap[parent] = Heap[child];
+                    _heap[parent] = _heap[child];
                     parent = child;
                     child = 2 * parent + 1;
                 }
 
-                Heap[parent] = last;
-                Heap.RemoveAt(n);
+                _heap[parent] = last;
+                _heap.RemoveAt(n);
 
                 return item;
             }
@@ -213,20 +213,20 @@ namespace CompetitiveProgramming.Utils
             /// </summary>
             public T Peek()
             {
-                if (!Heap.Any()) throw new Exception();
+                if (!_heap.Any()) throw new Exception();
 
-                return Heap[0];
+                return _heap[0];
             }
 
             /// <summary>
             /// ヒープに格納されているアイテム数
             /// </summary>
-            public int Count() => Heap.Count;
+            public int Count() => _heap.Count;
 
             /// <summary>
             /// 一つでも値が格納されているか
             /// </summary>
-            public bool Any() => Heap.Any();
+            public bool Any() => _heap.Any();
         }
     }
 
@@ -234,22 +234,22 @@ namespace CompetitiveProgramming.Utils
     /// 重み付き・有向グラフの単一始点最短経路
     /// 辺の重みが負数でもOK（てか負数ないならDijkstra使って）
     /// </summary>
-    class BellmanFord
+    public class BellmanFord
     {
         /// <summary>
         /// 負の閉路を持つか？
         /// </summary>
         public bool HasNegCycle { get; private set; } = false;
 
-        const long Inf = long.MaxValue / 3;
-        const long NegCycle = -Inf;
+        private const long _inf = long.MaxValue / 3;
+        private const long _negCycle = -_inf;
 
         // ノード数
-        readonly int V;
+        private readonly int _nodes;
         // 隣接リスト
-        readonly List<Edge> Edges;
+        private readonly List<Edge> _edges;
         // 前回の最短経路結果
-        readonly long[] Dist;
+        private readonly long[] _dist;
 
         /// <summary>
         /// 
@@ -257,16 +257,16 @@ namespace CompetitiveProgramming.Utils
         /// <param name="v">ノード数</param>
         public BellmanFord(int v)
         {
-            Edges = new List<Edge>();
-            Dist = new long[v];
-            V = v;
+            _edges = new List<Edge>();
+            _dist = new long[v];
+            _nodes = v;
         }
 
         /// <summary>
         /// 経路追加
         /// </summary>
         public void AddPath(int from, int to, long cost)
-            => Edges.Add(new Edge(from, to, cost));
+            => _edges.Add(new Edge(from, to, cost));
 
         /// <summary>
         /// sから各ノードへの最短経路
@@ -285,41 +285,41 @@ namespace CompetitiveProgramming.Utils
         /// </remarks>
         public long[] ShortestPath(int s, bool needsDetail=false)
         {
-            var E = Edges.Count;
-            for (int i = 0; i < V; i++)
+            var E = _edges.Count;
+            for (int i = 0; i < _nodes; i++)
             {
-                Dist[i] = Inf;
+                _dist[i] = _inf;
             }
 
-            Dist[s] = 0;
+            _dist[s] = 0;
             HasNegCycle = false;
-            int count = RelaxEdges(E, Dist, (x, y) => x + y);
+            int count = RelaxEdges(E, _dist, (x, y) => x + y);
 
             // 閉路が一つでもある
-            HasNegCycle = count > V - 1;
+            HasNegCycle = count > _nodes - 1;
 
             if (needsDetail)
             {
                 // 詳細な負の閉路検出
-                RelaxEdges(E, Dist, (x, y) => NegCycle);
+                RelaxEdges(E, _dist, (x, y) => _negCycle);
             }
 
-            return Dist;
+            return _dist;
         }
 
         /// <summary>
         /// 辺の緩和
         /// </summary>
-        int RelaxEdges(int E, long[] d, Func<long, long, long> relax)
+        private int RelaxEdges(int E, long[] d, Func<long, long, long> relax)
         {
             int count;
-            for (count = 0; count < V; count++)
+            for (count = 0; count < _nodes; count++)
             {
                 var update = false;
                 for (int i = 0; i < E; i++)
                 {
-                    var e = Edges[i];
-                    if (d[e.From] == Inf) continue;
+                    var e = _edges[i];
+                    if (d[e.From] == _inf) continue;
                     if (d[e.To] > d[e.From] + e.Cost)
                     {
                         d[e.To] = relax(d[e.From], e.Cost);
@@ -336,7 +336,7 @@ namespace CompetitiveProgramming.Utils
         /// <summary>
         /// 接続されているか?
         /// </summary>
-        public bool IsConnected(int t) => Dist[t] != Inf;
+        public bool IsConnected(int t) => _dist[t] != _inf;
 
         /// <summary>
         /// 負の閉路と接続されているか？
@@ -344,9 +344,9 @@ namespace CompetitiveProgramming.Utils
         /// <remarks>
         /// ShortestPath で needsDetail=false を指定した場合は使えない
         /// </remarks>
-        public bool IsConnectedNegCycle(int t) => Dist[t] == NegCycle;
+        public bool IsConnectedNegCycle(int t) => _dist[t] == _negCycle;
 
-        struct Edge
+        private struct Edge
         {
             public int From;
             public int To;
@@ -364,23 +364,23 @@ namespace CompetitiveProgramming.Utils
     /// <summary>
     /// 重み付き・有向グラフの全ノード間最短経路
     /// </summary>
-    class WarshallFloyd
+    public class WarshallFloyd
     {
         /// <summary>
         /// 負の閉路を持つか？
         /// </summary>
         public bool HasNegCycle { get; private set; } = false;
 
-        const long Inf = long.MaxValue / 3;
+        private const long _inf = long.MaxValue / 3;
 
         // ノード数
-        readonly int V;
+        private readonly int _nodes;
         // 隣接行列
-        readonly long[,] Matrix;
+        private readonly long[,] _matrix;
         // 前回の最短経路結果
-        readonly long[,] Dist;
+        private readonly long[,] _dist;
         // 経路復元用
-        readonly int[,] Next;
+        private readonly int[,] _next;
 
         /// <summary>
         /// 
@@ -388,27 +388,27 @@ namespace CompetitiveProgramming.Utils
         /// <param name="v">ノード数</param>
         public WarshallFloyd(int v)
         {
-            Matrix = new long[v, v];
-            Next = new int[v, v];
-            Dist = new long[v, v];
+            _matrix = new long[v, v];
+            _next = new int[v, v];
+            _dist = new long[v, v];
             for (int i = 0; i < v; i++)
             {
                 for (int j = 0; j < v; j++)
                 {
-                    Matrix[i, j] = (i == j) ? 0 : Inf;
-                    Next[i, j] = j;
+                    _matrix[i, j] = (i == j) ? 0 : _inf;
+                    _next[i, j] = j;
                 }
             }
 
-            V = v;
-            Dist[0, 0] = Inf;
+            _nodes = v;
+            _dist[0, 0] = _inf;
         }
 
         /// <summary>
         /// 経路追加
         /// </summary>
         public void AddPath(int from, int to, long cost)
-            => Matrix[from, to] = cost;
+            => _matrix[from, to] = cost;
 
         /// <summary>
         /// sから各ノードへの最短経路
@@ -416,35 +416,35 @@ namespace CompetitiveProgramming.Utils
         /// </summary>
         public long[,] ShortestPath()
         {
-            Array.Copy(Matrix, Dist, Matrix.Length);
+            Array.Copy(_matrix, _dist, _matrix.Length);
             HasNegCycle = false;
 
-            for (int i = 0; i < V; i++)
+            for (int i = 0; i < _nodes; i++)
             {
-                for (int j = 0; j < V; j++)
+                for (int j = 0; j < _nodes; j++)
                 {
-                    for (int k = 0; k < V; k++)
+                    for (int k = 0; k < _nodes; k++)
                     {
-                        if (Dist[j, i] == Inf || Dist[i, k] == Inf) continue;
-                        if (Dist[j, k] <= Dist[j, i] + Dist[i, k]) continue;
+                        if (_dist[j, i] == _inf || _dist[i, k] == _inf) continue;
+                        if (_dist[j, k] <= _dist[j, i] + _dist[i, k]) continue;
 
-                        Dist[j, k] = Dist[j, i] + Dist[i, k];
-                        Next[j, k] = Next[j, i];
+                        _dist[j, k] = _dist[j, i] + _dist[i, k];
+                        _next[j, k] = _next[j, i];
                     }
                 }
             }
 
             // 負の閉路がある？
-            for (int i = 0; i < V; i++)
+            for (int i = 0; i < _nodes; i++)
             {
-                if (Dist[i, i] < 0)
+                if (_dist[i, i] < 0)
                 {
                     HasNegCycle = true;
                     break;
                 }
             }
 
-            return Dist;
+            return _dist;
         }
 
         /// <summary>
@@ -453,7 +453,7 @@ namespace CompetitiveProgramming.Utils
         /// </summary>
         public IEnumerable<int> RestorePath(int s, int g)
         {
-            if (Dist[0, 0] == Inf) { throw new Exception(); }
+            if (_dist[0, 0] == _inf) { throw new Exception(); }
             if (!IsConnected(s, g)) { yield break; }
 
             var current = s;
@@ -461,7 +461,7 @@ namespace CompetitiveProgramming.Utils
             {
                 yield return current;
 
-                current = Next[current, g];
+                current = _next[current, g];
             }
 
             yield return current;
@@ -470,6 +470,6 @@ namespace CompetitiveProgramming.Utils
         /// <summary>
         /// 接続されているか?
         /// </summary>
-        public bool IsConnected(int s, int g) => Dist[s, g] != Inf;
+        public bool IsConnected(int s, int g) => _dist[s, g] != _inf;
     }
 }

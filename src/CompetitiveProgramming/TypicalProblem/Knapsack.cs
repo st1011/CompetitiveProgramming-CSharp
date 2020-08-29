@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace CompetitiveProgramming.TypicalProblem
 {
-    class Knapsack
+    public static class Knapsack
     {
         class Answer
         {

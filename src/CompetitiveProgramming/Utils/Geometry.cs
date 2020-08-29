@@ -20,9 +20,9 @@ namespace CompetitiveProgramming.Utils
             Unsolved = 9,       // 未解決
         }
 
-        static readonly double Epsilon = 1e-10;
+        private const double _epsilon = 1e-10;
 
-        public static bool IsEqual(double x, double y) => Math.Abs(x - y) < Epsilon;
+        public static bool IsEqual(double x, double y) => Math.Abs(x - y) < _epsilon;
 
         public struct Point : IEquatable<Point>
         {
@@ -75,9 +75,9 @@ namespace CompetitiveProgramming.Utils
                 var b = p3 - p1;
 
                 var cross = Cross(a, b);
-                if (cross > Epsilon) return Relationship.CCW;
-                if (cross < -Epsilon) return Relationship.CW;
-                if (Dot(a, b) < -Epsilon) return Relationship.OnlineBack;
+                if (cross > _epsilon) return Relationship.CCW;
+                if (cross < -_epsilon) return Relationship.CW;
+                if (Dot(a, b) < -_epsilon) return Relationship.OnlineBack;
                 if (a.Norm() < b.Norm()) return Relationship.OnlineFront;
 
                 return Relationship.Onsegment;
@@ -335,8 +335,8 @@ namespace CompetitiveProgramming.Utils
                 yield return pr - e * bs;
             }
 
-            static double Radian(Point p) => Math.Atan2(p.Y, p.X);
-            static Point Polar(double power, double radian) => new Point(Math.Cos(radian), Math.Sin(radian)) * power;
+            private static double Radian(Point p) => Math.Atan2(p.Y, p.X);
+            private static Point Polar(double power, double radian) => new Point(Math.Cos(radian), Math.Sin(radian)) * power;
 
             /// <summary>
             /// 円との交点
@@ -431,8 +431,8 @@ namespace CompetitiveProgramming.Utils
                     var a = Points[i] - p;
                     var b = Points[(i + 1) % n] - p;
 
-                    if ((Math.Abs(Point.Cross(a, b)) < Epsilon)
-                        && (Point.Dot(a, b) < Epsilon))
+                    if ((Math.Abs(Point.Cross(a, b)) < _epsilon)
+                        && (Point.Dot(a, b) < _epsilon))
                     {
                         return 1;
                     }
@@ -443,7 +443,7 @@ namespace CompetitiveProgramming.Utils
                         b = temp;
                     }
 
-                    if (a.Y < Epsilon && b.Y > Epsilon && Point.Cross(a, b) > Epsilon)
+                    if (a.Y < _epsilon && b.Y > _epsilon && Point.Cross(a, b) > _epsilon)
                     {
                         x = !x;
                     }
@@ -531,7 +531,7 @@ namespace CompetitiveProgramming.Utils
             for (int i = 0; i < ps.Length; i++)
             {
                 // 新しく追加する点によって凸包ではなくなるのなら、以前追加した点を削除する
-                while (k > 1 && (qs[k - 1] - qs[k - 2]).Cross(ps[i] - qs[k - 1]) < -Epsilon)
+                while (k > 1 && (qs[k - 1] - qs[k - 2]).Cross(ps[i] - qs[k - 1]) < -_epsilon)
                 {
                     k--;
                 }
@@ -544,7 +544,7 @@ namespace CompetitiveProgramming.Utils
             for (int i = ps.Length - 2; i >= 0; i--)
             {
                 // 新しく追加する点によって凸包ではなくなるのなら、以前追加した点を削除する
-                while (k > t && (qs[k - 1] - qs[k - 2]).Cross(ps[i] - qs[k - 1]) < -Epsilon)
+                while (k > t && (qs[k - 1] - qs[k - 2]).Cross(ps[i] - qs[k - 1]) < -_epsilon)
                 {
                     k--;
                 }
@@ -588,7 +588,7 @@ namespace CompetitiveProgramming.Utils
             {
                 r = Math.Max(r, ch[i].Distance(ch[j]));
 
-                if ((ch[(i + 1) % n] - ch[i]).Cross(ch[(j + 1) % n] - ch[j]) < Epsilon)
+                if ((ch[(i + 1) % n] - ch[i]).Cross(ch[(j + 1) % n] - ch[j]) < _epsilon)
                 {
                     i = (i + 1) % n;
                 }

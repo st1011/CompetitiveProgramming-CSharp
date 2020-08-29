@@ -10,16 +10,16 @@ namespace CompetitiveProgramming.Utils
     /// 最小共通祖先
     /// (探索ノードに一番近い共通ノード)
     /// </summary>
-    class Lca
+    public class Lca
     {
-        readonly int N;
-        readonly int Root;
+        private readonly int _nodeCount;
+        private readonly int _root;
 
-        readonly List<int>[] G;
+        private readonly List<int>[] _nodes;
         // [i][j]: jの2^i個上のノード番号
-        int[][] Parent;
+        private int[][] _parent;
         // 該当ノードのrootからの深さ
-        int[] Depth;
+        private int[] _depth;
 
         /// <summary>
         /// </summary>
@@ -27,10 +27,10 @@ namespace CompetitiveProgramming.Utils
         /// <param name="root">rootノード番号</param>
         public Lca(int n, int root = 0)
         {
-            N = n;
-            Root = root;
+            _nodeCount = n;
+            _root = root;
 
-            G = Enumerable.Range(0, n)
+            _nodes = Enumerable.Range(0, n)
                 .Select(_ => new List<int>())
                 .ToArray();
         }
@@ -40,32 +40,32 @@ namespace CompetitiveProgramming.Utils
         /// </summary>
         public void Add(int parent, int child)
         {
-            G[parent].Add(child);
-            G[child].Add(parent);
+            _nodes[parent].Add(child);
+            _nodes[child].Add(parent);
         }
 
         /// <summary>
         /// LCA用のダブリング作成
         /// </summary>
-        void Build()
+        private void Build()
         {
             int n = 1;
-            while ((1 << n) < N) n++;
+            while ((1 << n) < _nodeCount) n++;
 
-            Parent = Enumerable.Range(0, n)
-                .Select(_ => Enumerable.Repeat(-1, N).ToArray())
+            _parent = Enumerable.Range(0, n)
+                .Select(_ => Enumerable.Repeat(-1, _nodeCount).ToArray())
                 .ToArray();
-            Depth = Enumerable.Repeat(-1, N).ToArray();
+            _depth = Enumerable.Repeat(-1, _nodeCount).ToArray();
 
-            Dfs(Root, -1, 0);
+            Dfs(_root, -1, 0);
 
             for (int i = 0; i < n - 1; i++)
             {
-                for (int j = 0; j < N; j++)
+                for (int j = 0; j < _nodeCount; j++)
                 {
-                    if (Parent[i][j] != -1)
+                    if (_parent[i][j] != -1)
                     {
-                        Parent[i + 1][j] = Parent[i][Parent[i][j]];
+                        _parent[i + 1][j] = _parent[i][_parent[i][j]];
                     }
                 }
             }
@@ -74,12 +74,12 @@ namespace CompetitiveProgramming.Utils
         /// <summary>
         /// ダブリング
         /// </summary>
-        void Dfs(int v, int p, int d)
+        private void Dfs(int v, int p, int d)
         {
-            Parent[0][v] = p;
-            Depth[v] = d;
+            _parent[0][v] = p;
+            _depth[v] = d;
 
-            foreach (var e in G[v])
+            foreach (var e in _nodes[v])
             {
                 if (e == p) continue;
                 Dfs(e, v, d + 1);
@@ -91,37 +91,37 @@ namespace CompetitiveProgramming.Utils
         /// </summary>
         public int Get(int u, int v)
         {
-            if (Depth == null) Build();
+            if (_depth == null) Build();
 
-            if (Depth[u] > Depth[v]) Swap(ref u, ref v);
+            if (_depth[u] > _depth[v]) Swap(ref u, ref v);
 
-            for (int i = 0; i < Parent.Length; i++)
+            for (int i = 0; i < _parent.Length; i++)
             {
-                var d = Depth[v] - Depth[u];
+                var d = _depth[v] - _depth[u];
                 if (((d >> i) & 1) != 0)
                 {
-                    v = Parent[i][v];
+                    v = _parent[i][v];
                 }
             }
 
             if (u == v) return u;
 
-            for (int i = Parent.Length - 1; i >= 0; i--)
+            for (int i = _parent.Length - 1; i >= 0; i--)
             {
-                if (Parent[i][u] != Parent[i][v])
+                if (_parent[i][u] != _parent[i][v])
                 {
-                    u = Parent[i][u];
-                    v = Parent[i][v];
+                    u = _parent[i][u];
+                    v = _parent[i][v];
                 }
             }
 
-            return Parent[0][u];
+            return _parent[0][u];
         }
 
         /// <summary>
         /// swap
         /// </summary>
-        static void Swap<T>(ref T x, ref T y)
+        private static void Swap<T>(ref T x, ref T y)
         {
             var z = x;
             x = y;

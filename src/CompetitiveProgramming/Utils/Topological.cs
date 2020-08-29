@@ -9,10 +9,10 @@ namespace CompetitiveProgramming.Utils
     /// <summary>
     /// トポロジカルソート
     /// </summary>
-    class Topological
+    public class Topological
     {
         // 接続情報
-        readonly List<List<int>> es;
+        private readonly List<List<int>> _es;
 
         /// <summary>
         /// 
@@ -20,7 +20,7 @@ namespace CompetitiveProgramming.Utils
         /// <param name="v">ノード数</param>
         public Topological(int v)
         {
-            es = Enumerable.Repeat(0, v)
+            _es = Enumerable.Repeat(0, v)
                 .Select(_ => new List<int>())
                 .ToList();
         }
@@ -32,7 +32,7 @@ namespace CompetitiveProgramming.Utils
         /// <param name="to"></param>
         /// <param name="cost"></param>
         public void AddPath(int from, int to)
-            => es[from].Add(to);
+            => _es[from].Add(to);
 
         /// <summary>
         /// 各ノードへの最短経路
@@ -42,26 +42,26 @@ namespace CompetitiveProgramming.Utils
         public int[] Sort()
         {
             // 各頂点の出自数
-            var degs = new int[es.Count];
+            var degs = new int[_es.Count];
             // 便宜上、逆向きの辺一覧
-            var edges = Enumerable.Repeat(0, es.Count)
+            var edges = Enumerable.Repeat(0, _es.Count)
                 .Select(_ => new List<int>())
                 .ToArray();
             // 出次数0の頂点一覧
             var q = new Queue<int>();
 
-            for (int i = 0; i < es.Count; i++)
+            for (int i = 0; i < _es.Count; i++)
             {
-                if (!es[i].Any())
+                if (!_es[i].Any())
                 {
                     q.Enqueue(i);
                     continue;
                 }
 
-                for (int j = 0; j < es[i].Count; j++)
+                for (int j = 0; j < _es[i].Count; j++)
                 {
                     degs[i]++;
-                    edges[es[i][j]].Add(i);
+                    edges[_es[i][j]].Add(i);
                 }
             }
 

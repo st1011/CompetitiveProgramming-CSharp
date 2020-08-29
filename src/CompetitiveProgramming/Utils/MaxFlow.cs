@@ -12,32 +12,17 @@ namespace CompetitiveProgramming.Utils
     /// 最大フロー(Dinic法)
     /// 応用：二部最大マッチング
     /// </summary>
-    class MaxFlow
+    public class MaxFlow
     {
-        static readonly int INF = int.MaxValue / 3;
+        private const int _inf = int.MaxValue / 3;
 
-        class Edge
-        {
-            public int To;
-            public int Capacity;
-            // 逆辺
-            public int Rev;
-
-            public Edge(int to, int cap, int r)
-            {
-                To = to;
-                Capacity = cap;
-                Rev = r;
-            }
-        }
-
-        readonly List<Edge>[] G;
+        private readonly List<Edge>[] _nodes;
 
         // sからの距離
-        readonly int[] Level;
+        private readonly int[] _level;
 
         // 調査済みフラグ
-        readonly int[] Iter;
+        private readonly int[] _iter;
 
         /// <summary>
         /// 
@@ -45,12 +30,12 @@ namespace CompetitiveProgramming.Utils
         /// <param name="n">ノード数</param>
         public MaxFlow(int n)
         {
-            G = Enumerable.Range(0, n)
+            _nodes = Enumerable.Range(0, n)
                 .Select(_ => new List<Edge>())
                 .ToArray();
 
-            Level = new int[n];
-            Iter = new int[n];
+            _level = new int[n];
+            _iter = new int[n];
         }
 
         /// <summary>
@@ -58,49 +43,49 @@ namespace CompetitiveProgramming.Utils
         /// </summary>
         public void Add(int from, int to, int cap)
         {
-            G[from].Add(new Edge(to, cap, G[to].Count));
-            G[to].Add(new Edge(from, 0, G[from].Count - 1));
+            _nodes[from].Add(new Edge(to, cap, _nodes[to].Count));
+            _nodes[to].Add(new Edge(from, 0, _nodes[from].Count - 1));
         }
 
-        void Bfs(int s)
+        private void Bfs(int s)
         {
-            for (int i = 0; i < Level.Length; i++)
+            for (int i = 0; i < _level.Length; i++)
             {
-                Level[i] = -1;
+                _level[i] = -1;
             }
             var q = new Queue<int>();
 
-            Level[s] = 0;
+            _level[s] = 0;
             q.Enqueue(s);
 
             while (q.Any())
             {
                 var v = q.Dequeue();
-                for (int i = 0; i < G[v].Count; i++)
+                for (int i = 0; i < _nodes[v].Count; i++)
                 {
-                    var e = G[v][i];
-                    if (e.Capacity > 0 && Level[e.To] < 0)
+                    var e = _nodes[v][i];
+                    if (e.Capacity > 0 && _level[e.To] < 0)
                     {
-                        Level[e.To] = Level[v] + 1;
+                        _level[e.To] = _level[v] + 1;
                         q.Enqueue(e.To);
                     }
                 }
             }
         }
 
-        int Dfs(int v, int t, int f)
+        private int Dfs(int v, int t, int f)
         {
             if (v == t) return f;
-            for (int i = Iter[v]; i < G[v].Count; Iter[v] = ++i)
+            for (int i = _iter[v]; i < _nodes[v].Count; _iter[v] = ++i)
             {
-                var e = G[v][i];
-                if (e.Capacity > 0 && Level[v] < Level[e.To])
+                var e = _nodes[v][i];
+                if (e.Capacity > 0 && _level[v] < _level[e.To])
                 {
                     int d = Dfs(e.To, t, Math.Min(f, e.Capacity));
                     if (d > 0)
                     {
                         e.Capacity -= d;
-                        G[e.To][e.Rev].Capacity += d;
+                        _nodes[e.To][e.Rev].Capacity += d;
                         return d;
                     }
                 }
@@ -124,17 +109,32 @@ namespace CompetitiveProgramming.Utils
             while (true)
             {
                 Bfs(s);
-                if (Level[t] < 0) return flow;
-                for (int i = 0; i < Iter.Length; i++)
+                if (_level[t] < 0) return flow;
+                for (int i = 0; i < _iter.Length; i++)
                 {
-                    Iter[i] = 0;
+                    _iter[i] = 0;
                 }
 
                 int f;
-                while ((f = Dfs(s, t, INF)) > 0)
+                while ((f = Dfs(s, t, _inf)) > 0)
                 {
                     flow += f;
                 }
+            }
+        }
+
+        private class Edge
+        {
+            public int To;
+            public int Capacity;
+            // 逆辺
+            public int Rev;
+
+            public Edge(int to, int cap, int r)
+            {
+                To = to;
+                Capacity = cap;
+                Rev = r;
             }
         }
     }

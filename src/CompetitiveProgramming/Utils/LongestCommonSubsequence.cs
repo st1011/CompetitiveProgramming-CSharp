@@ -16,8 +16,8 @@ namespace CompetitiveProgramming.Utils
         public IReadOnlyList<T> Y { get; private set; }
         public int Length { get; }
 
-        int[,] Dp { get; set; }
-        T[] Lcs { get; set; }
+        private readonly int[,] _dp;
+        private T[] _lcs;
 
         public LongestCommonSubsequence(IReadOnlyList<T> x, IReadOnlyList<T> y)
         {
@@ -28,14 +28,14 @@ namespace CompetitiveProgramming.Utils
             Y = y;
 
             // 計算まで済ませておく
-            Dp = LcsDP(X, Y);
-            Length = Dp[X.Count, y.Count];
+            _dp = LcsDP(X, Y);
+            Length = _dp[X.Count, y.Count];
         }
 
         /// <summary>
         /// LCSのテーブルを計算する
         /// </summary>
-        int[,] LcsDP(IReadOnlyList<T> x, IReadOnlyList<T> y)
+        private int[,] LcsDP(IReadOnlyList<T> x, IReadOnlyList<T> y)
         {
             var m = x.Count;
             var n = y.Count;
@@ -62,7 +62,7 @@ namespace CompetitiveProgramming.Utils
         /// <summary>
         /// LCSの計算用テーブルからLCSを復元する
         /// </summary>
-        T[] RestoreLcs(IReadOnlyList<T> x, int[,] l)
+        private T[] RestoreLcs(IReadOnlyList<T> x, int[,] l)
         {
             var i = l.GetLength(0) - 1;
             var j = l.GetLength(1) - 1;
@@ -94,12 +94,12 @@ namespace CompetitiveProgramming.Utils
         /// </summary>
         public T[] GetLcs()
         {
-            if (Lcs == null)
+            if (_lcs == null)
             {
-                Lcs = RestoreLcs(X, Dp);
+                _lcs = RestoreLcs(X, _dp);
             }
 
-            return Lcs;
+            return _lcs;
         }
     }
 }

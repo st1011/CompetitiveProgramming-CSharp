@@ -14,15 +14,81 @@ namespace CompetitiveProgramming.Utils
     /// </summary>
     class Kruskal
     {
+        // 接続情報
+        private readonly List<Edge> _es;
+
+        // ノード数
+        private readonly int _nodeCount;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v">ノード数</param>
+        public Kruskal(int v)
+        {
+            _es = new List<Edge>();
+            _nodeCount = v;
+        }
+
+        /// <summary>
+        /// 経路追加
+        /// </summary>
+        /// <param name="v1"></param>
+        /// <param name="v2"></param>
+        /// <param name="cost"></param>
+        public void AddPath(int v1, int v2, int cost)
+            => _es.Add(new Edge(v1, v2, cost));
+
+        /// <summary>
+        /// 最小全域木
+        /// </summary>
+        /// <returns></returns>
+        public List<Edge> MinimumSpanningTree()
+        {
+            _es.Sort();
+
+            var uf = new UnionFind(_nodeCount);
+            var tree = new List<Edge>();
+            foreach (var edge in _es)
+            {
+                if (!uf.Same(edge.V1, edge.V2))
+                {
+                    uf.Merge(edge.V1, edge.V2);
+                    tree.Add(edge);
+                }
+            }
+
+            return tree;
+        }
+
+        public struct Edge : IComparable<Edge>
+        {
+            public int V1;
+            public int V2;
+            public int Cost;
+
+            public Edge(int v1, int v2, int cost)
+            {
+                V1 = v1;
+                V2 = v2;
+                Cost = cost;
+            }
+
+            public int CompareTo(Edge other)
+            {
+                return Cost - other.Cost;
+            }
+        }
+
         /// <summary>
         /// 重み付きUF木
         /// </summary>
-        class UnionFind
+        private class UnionFind
         {
-            int[] Rank { get; set; }
-            int[] Size { get; set; }
-            int[] ParentId { get; set; }
-            int[] DiffWeight { get; set; }
+            private readonly int[] _rank;
+            private readonly int[] _size;
+            private readonly int[] _parentId;
+            private readonly int[] _diffWeight;
 
             /// <summary>
             /// 
@@ -30,10 +96,10 @@ namespace CompetitiveProgramming.Utils
             /// <param name="size">ノードの総数</param>
             public UnionFind(int size)
             {
-                Rank = new int[size];
-                Size = Enumerable.Repeat(1, size).ToArray();
-                ParentId = Enumerable.Range(0, size).ToArray();
-                DiffWeight = new int[size];
+                _rank = new int[size];
+                _size = Enumerable.Repeat(1, size).ToArray();
+                _parentId = Enumerable.Range(0, size).ToArray();
+                _diffWeight = new int[size];
             }
 
             /// <summary>
@@ -54,15 +120,15 @@ namespace CompetitiveProgramming.Utils
             /// <returns></returns>
             public int FindRoot(int x)
             {
-                if (x != ParentId[x])
+                if (x != _parentId[x])
                 {
                     // 経路中のノードのパラメータを更新しておく
-                    var root = FindRoot(ParentId[x]);
-                    DiffWeight[x] += DiffWeight[ParentId[x]];
-                    ParentId[x] = root;
+                    var root = FindRoot(_parentId[x]);
+                    _diffWeight[x] += _diffWeight[_parentId[x]];
+                    _parentId[x] = root;
                 }
 
-                return ParentId[x];
+                return _parentId[x];
             }
 
             /// <summary>
@@ -74,7 +140,7 @@ namespace CompetitiveProgramming.Utils
             {
                 FindRoot(x);
 
-                return DiffWeight[x];
+                return _diffWeight[x];
             }
 
             /// <summary>
@@ -103,21 +169,21 @@ namespace CompetitiveProgramming.Utils
 
                 if (x == y) return;
 
-                if (Rank[x] < Rank[y])
+                if (_rank[x] < _rank[y])
                 {
-                    ParentId[x] = y;
-                    Size[y] += Size[x];
-                    DiffWeight[x] = -w;
+                    _parentId[x] = y;
+                    _size[y] += _size[x];
+                    _diffWeight[x] = -w;
                 }
                 else
                 {
-                    ParentId[y] = x;
-                    Size[x] += Size[y];
-                    DiffWeight[y] = w;
+                    _parentId[y] = x;
+                    _size[x] += _size[y];
+                    _diffWeight[y] = w;
 
-                    if (Rank[x] == Rank[y])
+                    if (_rank[x] == _rank[y])
                     {
-                        Rank[x]++;
+                        _rank[x]++;
                     }
                 }
             }
@@ -131,74 +197,8 @@ namespace CompetitiveProgramming.Utils
             {
                 x = FindRoot(x);
 
-                return Size[x];
+                return _size[x];
             }
-        }
-
-        public struct Edge : IComparable<Edge>
-        {
-            public int V1;
-            public int V2;
-            public int Cost;
-
-            public Edge(int v1, int v2, int cost)
-            {
-                V1 = v1;
-                V2 = v2;
-                Cost = cost;
-            }
-
-            public int CompareTo(Edge other)
-            {
-                return Cost - other.Cost;
-            }
-        }
-
-        // 接続情報
-        readonly List<Edge> es;
-
-        // ノード数
-        readonly int V;
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="v">ノード数</param>
-        public Kruskal(int v)
-        {
-            es = new List<Edge>();
-            V = v;
-        }
-
-        /// <summary>
-        /// 経路追加
-        /// </summary>
-        /// <param name="v1"></param>
-        /// <param name="v2"></param>
-        /// <param name="cost"></param>
-        public void AddPath(int v1, int v2, int cost)
-            => es.Add(new Edge(v1, v2, cost));
-
-        /// <summary>
-        /// 最小全域木
-        /// </summary>
-        /// <returns></returns>
-        public List<Edge> MinimumSpanningTree()
-        {
-            es.Sort();
-
-            var uf = new UnionFind(V);
-            var tree = new List<Edge>();
-            foreach (var edge in es)
-            {
-                if (!uf.Same(edge.V1, edge.V2))
-                {
-                    uf.Merge(edge.V1, edge.V2);
-                    tree.Add(edge);
-                }
-            }
-
-            return tree;
         }
     }
 }

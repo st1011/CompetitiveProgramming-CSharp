@@ -16,7 +16,7 @@ namespace CompetitiveProgramming.Utils
         /// <summary>
         /// 約数列挙 順番はバラバラなので注意！
         /// </summary>
-        static IEnumerable<long> Divisors(long n)
+        private static IEnumerable<long> Divisors(long n)
         {
             if (n < 1) yield break;
 

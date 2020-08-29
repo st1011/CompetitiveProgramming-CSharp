@@ -15,7 +15,7 @@ namespace CompetitiveProgramming.Utils
         /// <summary>
         /// Bound系の下請け
         /// </summary>
-        static int FindBound<T>(IList<T> list, T v, int begin, int end, Func<T, T, bool> judge) where T : IComparable<T>
+        private static int FindBound<T>(IList<T> list, T v, int begin, int end, Func<T, T, bool> judge) where T : IComparable<T>
         {
             int low = begin, high = end;
 
@@ -79,17 +79,17 @@ namespace CompetitiveProgramming.Utils
     public class SearchOfComparerChangeable<T>
     {
         /// <summary> 比較用関数 </summary>
-        private Comparison<T> Comparison { get; set; }
+        private readonly Comparison<T> _comparison;
 
         public SearchOfComparerChangeable(Comparison<T> comparison = null)
         {
-            Comparison = comparison ?? Comparer<T>.Default.Compare;
+            _comparison = comparison ?? Comparer<T>.Default.Compare;
         }
 
         /// <summary>
         /// Bound系の下請け
         /// </summary>
-        static int FindBound(IList<T> list, T v, int begin, int end, Func<T, T, bool> judge)
+        private static int FindBound(IList<T> list, T v, int begin, int end, Func<T, T, bool> judge)
         {
             int low = begin, high = end;
 
@@ -115,7 +115,7 @@ namespace CompetitiveProgramming.Utils
         public int LowerBound(IList<T> list, T v, int begin, int end)
         {
             if (list == null) { throw new ArgumentNullException(nameof(list)); }
-            return FindBound(list, v, begin, end, (x, y) => Comparison(x, y) <= 0);
+            return FindBound(list, v, begin, end, (x, y) => _comparison(x, y) <= 0);
         }
 
         /// <summary>
@@ -133,7 +133,7 @@ namespace CompetitiveProgramming.Utils
         public int UpperBound(IList<T> list, T v, int begin, int end)
         {
             if (list == null) { throw new ArgumentNullException(nameof(list)); }
-            return FindBound(list, v, begin, end, (x, y) => Comparison(x, y) < 0);
+            return FindBound(list, v, begin, end, (x, y) => _comparison(x, y) < 0);
         }
 
         /// <summary>

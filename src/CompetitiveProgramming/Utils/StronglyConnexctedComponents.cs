@@ -9,17 +9,16 @@ namespace CompetitiveProgramming.Utils
     /// <summary>
     /// 強連結成分分解
     /// </summary>
-    class StronglyConnectedComponents
+    public class StronglyConnectedComponents
     {
-        readonly List<int>[] es;
+        private readonly List<int>[] _es;
         // 逆向きの辺
-        readonly List<int>[] res;
-        readonly bool[] Visited;
-        readonly int[] Orders;
-        readonly List<List<int>> sccs;
-        readonly int[] grouping;
-
-        int Order;
+        private readonly List<int>[] _res;
+        private readonly bool[] _visited;
+        private readonly int[] _orders;
+        private readonly List<List<int>> _sccs;
+        private readonly int[] _grouping;
+        private int _order;
 
         /// <summary>
         /// 
@@ -27,18 +26,18 @@ namespace CompetitiveProgramming.Utils
         /// <param name="v">ノード数</param>
         public StronglyConnectedComponents(int v)
         {
-            es = Enumerable.Repeat(0, v)
+            _es = Enumerable.Repeat(0, v)
                 .Select(_ => new List<int>())
                 .ToArray();
-            res = Enumerable.Repeat(0, v)
+            _res = Enumerable.Repeat(0, v)
                 .Select(_ => new List<int>())
                 .ToArray();
-            sccs = new List<List<int>>();
-            grouping = new int[v];
+            _sccs = new List<List<int>>();
+            _grouping = new int[v];
 
-            Visited = new bool[v];
-            Orders = new int[v];
-            Order = 0;
+            _visited = new bool[v];
+            _orders = new int[v];
+            _order = 0;
         }
 
         /// <summary>
@@ -46,40 +45,40 @@ namespace CompetitiveProgramming.Utils
         /// </summary>
         public void Add(int from, int to)
         {
-            es[from].Add(to);
-            res[to].Add(from);
+            _es[from].Add(to);
+            _res[to].Add(from);
 
-            if (sccs.Any()) sccs.Clear();
+            if (_sccs.Any()) _sccs.Clear();
         }
 
         /// <summary>
         /// 逆向きの巡回の順番を決める
         /// </summary>
-        void GoRound(int s)
+        private void GoRound(int s)
         {
-            if (Visited[s]) return;
+            if (_visited[s]) return;
 
-            Visited[s] = true;
-            foreach (var e in es[s])
+            _visited[s] = true;
+            foreach (var e in _es[s])
             {
                 GoRound(e);
             }
 
-            Orders[s] = Order++;
+            _orders[s] = _order++;
         }
 
         /// <summary>
         /// 逆向きの辺を巡回しながら格納する
         /// </summary>
-        bool Resolve(int id, int s, List<int> scc)
+        private bool Resolve(int id, int s, List<int> scc)
         {
-            if (Visited[s]) return false;
+            if (_visited[s]) return false;
 
-            Visited[s] = true;
+            _visited[s] = true;
 
             scc.Add(s);
-            grouping[s] = id;
-            foreach (var e in res[s])
+            _grouping[s] = id;
+            foreach (var e in _res[s])
             {
                 Resolve(id, e, scc);
             }
@@ -90,30 +89,30 @@ namespace CompetitiveProgramming.Utils
         /// <summary>
         /// 強連結成分分解
         /// </summary>
-        void Resolve()
+        private void Resolve()
         {
-            if (sccs.Any()) return;
+            if (_sccs.Any()) return;
 
             // 一度全体を巡回して、逆順巡回の順番を決める
-            for (int i = 0; i < es.Length; i++)
+            for (int i = 0; i < _es.Length; i++)
             {
                 GoRound(i);
             }
 
-            for (int i = 0; i < Visited.Length; i++)
+            for (int i = 0; i < _visited.Length; i++)
             {
-                Visited[i] = false;
+                _visited[i] = false;
             }
 
             // 逆順に巡回する
-            var ords = Orders.Select((x, i) => new { Id = i, Order = x })
+            var ords = _orders.Select((x, i) => new { Id = i, Order = x })
                 .OrderByDescending(x => x.Order);
             foreach (var item in ords)
             {
                 var scc = new List<int>();
                 if (Resolve(item.Id, item.Id, scc))
                 {
-                    sccs.Add(scc);
+                    _sccs.Add(scc);
                 }
             }
         }
@@ -123,9 +122,9 @@ namespace CompetitiveProgramming.Utils
         /// </summary>
         public List<List<int>> Sccs()
         {
-            if (!sccs.Any()) Resolve();
+            if (!_sccs.Any()) Resolve();
 
-            return sccs;
+            return _sccs;
         }
 
         /// <summary>
@@ -134,9 +133,9 @@ namespace CompetitiveProgramming.Utils
         /// </summary>
         public int[] Grouping()
         {
-            if (!sccs.Any()) Resolve();
+            if (!_sccs.Any()) Resolve();
 
-            return grouping;
+            return _grouping;
         }
 
         /// <summary>
@@ -147,9 +146,9 @@ namespace CompetitiveProgramming.Utils
         /// <returns></returns>
         public bool Same(int u, int v)
         {
-            if (!sccs.Any()) Resolve();
+            if (!_sccs.Any()) Resolve();
 
-            return grouping[u] == grouping[v];
+            return _grouping[u] == _grouping[v];
         }
     }
 }

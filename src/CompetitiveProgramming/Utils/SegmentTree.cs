@@ -12,12 +12,12 @@ namespace CompetitiveProgramming.Utils
     /// 構築O(N)
     /// クエリO(logN)
     /// </remarks>
-    class SegTree<T>
+    public class SegTree<T>
     {
-        readonly int N;
-        readonly T[] Nodes;
-        readonly Func<T, T, T> Monoid;
-        readonly T IgnorableValue;
+        private readonly int _nodeCount;
+        private readonly T[] _nodes;
+        private readonly Func<T, T, T> _monoid;
+        private readonly T _ignorableValue;
 
         /// <summary>
         /// MinQueryの場合: (n, Math.Min, int.MaxValue)
@@ -31,13 +31,13 @@ namespace CompetitiveProgramming.Utils
         public SegTree(int n, Func<T, T, T> monoid, T initValue, T ignorableValue)
         {
             // 2のべき乗まで切り上げる
-            N = 1;
-            while (N < n) N *= 2;
+            _nodeCount = 1;
+            while (_nodeCount < n) _nodeCount *= 2;
 
-            Monoid = monoid;
-            IgnorableValue = ignorableValue;
+            _monoid = monoid;
+            _ignorableValue = ignorableValue;
 
-            Nodes = Enumerable.Repeat(initValue, 2 * N - 1).ToArray();
+            _nodes = Enumerable.Repeat(initValue, 2 * _nodeCount - 1).ToArray();
         }
 
         /// <summary>
@@ -47,20 +47,20 @@ namespace CompetitiveProgramming.Utils
         /// <param name="monoid"></param>
         /// <param name="ignorableValue"></param>
         public SegTree(IReadOnlyList<T> ie, Func<T, T, T> monoid, T ignorableValue)
-            : this(ie.Count, monoid, ignorableValue, ignorableValue)
+            : this(ie?.Count ?? 0, monoid, ignorableValue, ignorableValue)
         {
             var n = ie.Count;
 
             // 実データの上書き
             for (int i = 0; i < n; i++)
             {
-                Nodes[i + N - 1] = ie.ElementAt(i);
+                _nodes[i + _nodeCount - 1] = ie.ElementAt(i);
             }
 
             // 実データ以外の箇所を更新していく
-            for (int i = N - 2; i >= 0; i--)
+            for (int i = _nodeCount - 2; i >= 0; i--)
             {
-                Nodes[i] = Monoid(Nodes[2 * i + 1], Nodes[2 * i + 2]);
+                _nodes[i] = _monoid(_nodes[2 * i + 1], _nodes[2 * i + 2]);
             }
         }
 
@@ -72,14 +72,14 @@ namespace CompetitiveProgramming.Utils
         public void Update(int index, T v)
         {
             // 該当の最下段index
-            index += N - 1;
+            index += _nodeCount - 1;
 
-            Nodes[index] = v;
+            _nodes[index] = v;
             while (index > 0)
             {
                 // 親ノードを一つずつ更新していく
                 index = (index - 1) / 2;
-                Nodes[index] = Monoid(Nodes[2 * index + 1], Nodes[2 * index + 2]);
+                _nodes[index] = _monoid(_nodes[2 * index + 1], _nodes[2 * index + 2]);
             }
         }
 
@@ -92,37 +92,37 @@ namespace CompetitiveProgramming.Utils
         /// <param name="l">現在の対象区間 [l,</param>
         /// <param name="r">現在の対象区間 ,r)</param>
         /// <returns></returns>
-        T Find(int b, int e, int k, int l, int r)
+        private T Find(int b, int e, int k, int l, int r)
         {
             if (e <= l || b >= r)
             {
                 // 対象区間が要求区間外
-                return IgnorableValue;
+                return _ignorableValue;
             }
             if (b <= l && e >= r)
             {
                 // 対象区間が要求区間に内包されている
-                return Nodes[k];
+                return _nodes[k];
             }
 
             // 対象区間の一部が要求区間
             var vl = Find(b, e, 2 * k + 1, l, (l + r) / 2);
             var vr = Find(b, e, 2 * k + 2, (l + r) / 2, r);
 
-            return Monoid(vl, vr);
+            return _monoid(vl, vr);
         }
 
         /// <summary>
         /// [b,e)の演算結果を求める
         /// </summary>
         public T Find(int b, int e)
-            => Find(b, e, 0, 0, N);
+            => Find(b, e, 0, 0, _nodeCount);
 
         /// <summary>
         /// index番目の要素の取得
         /// </summary>
         public T Peek(int index)
-            => Nodes[index + N - 1];
+            => _nodes[index + _nodeCount - 1];
 
         // メモ
         // (k-1)/2が親ノード
@@ -135,12 +135,12 @@ namespace CompetitiveProgramming.Utils
     /// 遅延伝播セグメント木（Lazy Propagation Segment Tree）
     /// 区間加算とかだと遅延伝播用のデータが大きくなりがちなので、long推奨
     /// </summary>
-    class LazySegTree<T>
+    public class LazySegTree<T>
     {
-        readonly int N;
-        readonly T[] Nodes;
-        readonly T[] Lazy;
-        readonly bool[] NeedsEval;
+        private readonly int _nodeCount;
+        private readonly T[] _nodes;
+        private readonly T[] _lazy;
+        private readonly bool[] _needsEval;
 
         #region Example
         /// <summary>
@@ -210,23 +210,23 @@ namespace CompetitiveProgramming.Utils
         /// <summary>
         /// 末端の演算 MinQueryならMath.Minとか
         /// </summary>
-        readonly Func<T, T, T> Monoid;
+        private readonly Func<T, T, T> _monoid;
         /// <summary>
         /// LazyをNodesに伝播するときの演算
         /// </summary>
-        readonly Func<T, T, T> UpdateMonoid;
+        private readonly Func<T, T, T> _updateMonoid;
         /// <summary>
         /// Lazyの上から下への伝播
         /// </summary>
-        readonly Func<T, T, T> ForwardMonoid;
+        private readonly Func<T, T, T> _forwardMonoid;
         /// <summary>
         /// Lazyの下から上への伝播
         /// </summary>
-        readonly Func<T, T, int, T> BackwardMonoid;
+        private readonly Func<T, T, int, T> _backwardMonoid;
 
-        readonly T InitValue;
-        readonly T IgnorableValue;
-        readonly T LazyInitValue;
+        private readonly T _initValue;
+        private readonly T _ignorableValue;
+        private readonly T _lazyInitValue;
 
         /// <summary>
         /// 
@@ -245,20 +245,20 @@ namespace CompetitiveProgramming.Utils
             T nodeInitValue, T ignorableValue, T lazyInitValue)
         {
             // 2のべき乗まで切り上げる
-            N = 1;
-            while (N < n) N *= 2;
+            _nodeCount = 1;
+            while (_nodeCount < n) _nodeCount *= 2;
 
-            Lazy = new T[2 * N - 1];
-            NeedsEval = new bool[2 * N - 1];
-            Monoid = monoid;
-            UpdateMonoid = update;
-            ForwardMonoid = forward;
-            BackwardMonoid = backward;
-            InitValue = nodeInitValue;
-            IgnorableValue = ignorableValue;
-            LazyInitValue = lazyInitValue;
+            _lazy = new T[2 * _nodeCount - 1];
+            _needsEval = new bool[2 * _nodeCount - 1];
+            _monoid = monoid;
+            _updateMonoid = update;
+            _forwardMonoid = forward;
+            _backwardMonoid = backward;
+            _initValue = nodeInitValue;
+            _ignorableValue = ignorableValue;
+            _lazyInitValue = lazyInitValue;
 
-            Nodes = Enumerable.Repeat(InitValue, 2 * N - 1).ToArray();
+            _nodes = Enumerable.Repeat(_initValue, 2 * _nodeCount - 1).ToArray();
         }
 
         /// <summary>
@@ -267,23 +267,23 @@ namespace CompetitiveProgramming.Utils
         /// <param name="k"></param>
         /// <param name="l"></param>
         /// <param name="r"></param>
-        void Eval(int k, int l, int r)
+        private void Eval(int k, int l, int r)
         {
-            if (!NeedsEval[k]) return;
+            if (!_needsEval[k]) return;
 
             if (r - l > 1)
             {
                 // 葉ではないので、伝播を続ける
-                Lazy[k * 2 + 1] = ForwardMonoid(Lazy[k * 2 + 1], Lazy[k]);
-                Lazy[k * 2 + 2] = ForwardMonoid(Lazy[k * 2 + 2], Lazy[k]);
+                _lazy[k * 2 + 1] = _forwardMonoid(_lazy[k * 2 + 1], _lazy[k]);
+                _lazy[k * 2 + 2] = _forwardMonoid(_lazy[k * 2 + 2], _lazy[k]);
 
-                NeedsEval[k * 2 + 1] = NeedsEval[k * 2 + 2] = true;
+                _needsEval[k * 2 + 1] = _needsEval[k * 2 + 2] = true;
             }
 
-            Nodes[k] = UpdateMonoid(Nodes[k], Lazy[k]);
+            _nodes[k] = _updateMonoid(_nodes[k], _lazy[k]);
 
-            NeedsEval[k] = false;
-            Lazy[k] = LazyInitValue;
+            _needsEval[k] = false;
+            _lazy[k] = _lazyInitValue;
         }
 
         /// <summary>
@@ -295,22 +295,22 @@ namespace CompetitiveProgramming.Utils
         /// <param name="k">[l,r)に対応するindex</param>
         /// <param name="l"></param>
         /// <param name="r"></param>
-        void Update(int b, int e, T v, int k, int l, int r)
+        private void Update(int b, int e, T v, int k, int l, int r)
         {
             Eval(k, l, r);
 
             if (e <= l || r <= b) { return; }
             if (b <= l && r <= e)
             {
-                Lazy[k] = BackwardMonoid(Lazy[k], v, r - l);
-                NeedsEval[k] = true;
+                _lazy[k] = _backwardMonoid(_lazy[k], v, r - l);
+                _needsEval[k] = true;
                 Eval(k, l, r);
             }
             else
             {
                 Update(b, e, v, k * 2 + 1, l, (l + r) / 2);
                 Update(b, e, v, k * 2 + 2, (l + r) / 2, r);
-                Nodes[k] = Monoid(Nodes[k * 2 + 1], Nodes[k * 2 + 2]);
+                _nodes[k] = _monoid(_nodes[k * 2 + 1], _nodes[k * 2 + 2]);
             }
         }
 
@@ -321,7 +321,7 @@ namespace CompetitiveProgramming.Utils
         /// <param name="e"></param>
         /// <param name="v"></param>
         public void Update(int b, int e, T v)
-            => Update(b, e, v, 0, 0, N);
+            => Update(b, e, v, 0, 0, _nodeCount);
 
         /// <summary>
         /// k番目の要素の更新
@@ -340,26 +340,26 @@ namespace CompetitiveProgramming.Utils
         /// <param name="l">現在の対象区間 [l,</param>
         /// <param name="r">現在の対象区間 ,r)</param>
         /// <returns></returns>
-        T Find(int b, int e, int k, int l, int r)
+        private T Find(int b, int e, int k, int l, int r)
         {
             Eval(k, l, r);
 
             if (e <= l || b >= r)
             {
                 // 対象区間が要求区間外
-                return IgnorableValue;
+                return _ignorableValue;
             }
             if (b <= l && e >= r)
             {
                 // 対象区間が要求区間に内包されている
-                return Nodes[k];
+                return _nodes[k];
             }
 
             // 対象区間の一部が要求区間
             var vl = Find(b, e, k * 2 + 1, l, (l + r) / 2);
             var vr = Find(b, e, k * 2 + 2, (l + r) / 2, r);
 
-            return Monoid(vl, vr);
+            return _monoid(vl, vr);
         }
 
         /// <summary>
@@ -369,7 +369,7 @@ namespace CompetitiveProgramming.Utils
         /// <param name="e"></param>
         /// <returns></returns>
         public T Find(int b, int e)
-            => Find(b, e, 0, 0, N);
+            => Find(b, e, 0, 0, _nodeCount);
 
         /// <summary>
         /// k番目の要素の結果を求める
@@ -390,11 +390,11 @@ namespace CompetitiveProgramming.Utils
     /// 区間加算と区間総和
     /// セグメント木による
     /// </summary>
-    class RangeAddQuery
+    public class RangeAddQuery
     {
-        readonly int N;
-        readonly int[] All;
-        readonly int[] Part;
+        private readonly int _data;
+        private readonly int[] _all;
+        private readonly int[] _part;
 
         public long this[int i]
         {
@@ -409,11 +409,11 @@ namespace CompetitiveProgramming.Utils
         public RangeAddQuery(int n, int v = 0)
         {
             // 2のべき乗まで切り上げる
-            N = 1;
-            while (N < n) N *= 2;
+            _data = 1;
+            while (_data < n) _data *= 2;
 
-            All = Enumerable.Repeat(v, 2 * N - 1).ToArray();
-            Part = Enumerable.Repeat(v, 2 * N - 1).ToArray();
+            _all = Enumerable.Repeat(v, 2 * _data - 1).ToArray();
+            _part = Enumerable.Repeat(v, 2 * _data - 1).ToArray();
         }
 
         /// <summary>
@@ -425,17 +425,17 @@ namespace CompetitiveProgramming.Utils
         /// <param name="k"></param>
         /// <param name="l"></param>
         /// <param name="r"></param>
-        void Add(int b, int e, int v, int k, int l, int r)
+        private void Add(int b, int e, int v, int k, int l, int r)
         {
             if (b <= l && r <= e)
             {
                 // [l,r)が[b,e)に内包されていれば、全体に足すだけ
-                All[k] += v;
+                _all[k] += v;
             }
             else if (l < e && b < r)
             {
                 // [l,r)が[b,e)と交差している
-                Part[k] += (Math.Min(e, r) - Math.Max(b, l)) * v;
+                _part[k] += (Math.Min(e, r) - Math.Max(b, l)) * v;
                 Add(b, e, v, k * 2 + 1, l, (l + r) / 2);
                 Add(b, e, v, k * 2 + 2, (l + r) / 2, r);
             }
@@ -449,7 +449,7 @@ namespace CompetitiveProgramming.Utils
         /// <param name="e"></param>
         /// <param name="v"></param>
         public void Add(int b, int e, int v)
-            => Add(b, e, v, 0, 0, N);
+            => Add(b, e, v, 0, 0, _data);
 
         /// <summary>
         /// [b,e)の総和を求める
@@ -460,7 +460,7 @@ namespace CompetitiveProgramming.Utils
         /// <param name="l"></param>
         /// <param name="r"></param>
         /// <returns></returns>
-        long Sum(int b, int e, int k, int l, int r)
+        private long Sum(int b, int e, int k, int l, int r)
         {
             // [a,b)と[l,r)が交差していない
             if (e <= l || r <= b)
@@ -470,12 +470,12 @@ namespace CompetitiveProgramming.Utils
             else if (b <= l && r <= e)
             {
                 // 内包している
-                return All[k] * (r - l) + Part[k];
+                return _all[k] * (r - l) + _part[k];
             }
             else
             {
                 // 交差
-                long sum = (Math.Min(e, r) - Math.Max(b, l)) * All[k];
+                long sum = (Math.Min(e, r) - Math.Max(b, l)) * _all[k];
                 sum += Sum(b, e, k * 2 + 1, l, (l + r) / 2);
                 sum += Sum(b, e, k * 2 + 2, (l + r) / 2, r);
 
@@ -490,13 +490,13 @@ namespace CompetitiveProgramming.Utils
         /// <param name="e"></param>
         /// <returns></returns>
         public long Sum(int b, int e)
-            => Sum(b, e, 0, 0, N);
+            => Sum(b, e, 0, 0, _data);
 
         /// <summary>
         /// 全体の総和
         /// </summary>
         /// <returns></returns>
         public long Sum()
-            => Sum(0, N);
+            => Sum(0, _data);
     }
 }

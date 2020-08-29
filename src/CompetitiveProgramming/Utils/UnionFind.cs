@@ -10,12 +10,12 @@ namespace CompetitiveProgramming.Utils
     /// <summary>
     /// 重み付きUF木
     /// </summary>
-    class UnionFind
+    public class UnionFind
     {
-        int[] Rank { get; set; }
-        int[] Size { get; set; }
-        int[] ParentId { get; set; }
-        int[] DiffWeight { get; set; }
+        private readonly int[] _rank;
+        private readonly int[] _size;
+        private readonly int[] _parentId;
+        private readonly int[] _diffWeight;
 
         /// <summary>
         /// 
@@ -23,10 +23,10 @@ namespace CompetitiveProgramming.Utils
         /// <param name="size">ノードの総数</param>
         public UnionFind(int size)
         {
-            Rank = new int[size];
-            Size = Enumerable.Repeat(1, size).ToArray();
-            ParentId = Enumerable.Range(0, size).ToArray();
-            DiffWeight = new int[size];
+            _rank = new int[size];
+            _size = Enumerable.Repeat(1, size).ToArray();
+            _parentId = Enumerable.Range(0, size).ToArray();
+            _diffWeight = new int[size];
         }
 
         /// <summary>
@@ -47,15 +47,15 @@ namespace CompetitiveProgramming.Utils
         /// <returns></returns>
         public int FindRoot(int x)
         {
-            if (x != ParentId[x])
+            if (x != _parentId[x])
             {
                 // 経路中のノードのパラメータを更新しておく
-                var root = FindRoot(ParentId[x]);
-                DiffWeight[x] += DiffWeight[ParentId[x]];
-                ParentId[x] = root;
+                var root = FindRoot(_parentId[x]);
+                _diffWeight[x] += _diffWeight[_parentId[x]];
+                _parentId[x] = root;
             }
 
-            return ParentId[x];
+            return _parentId[x];
         }
 
         /// <summary>
@@ -67,7 +67,7 @@ namespace CompetitiveProgramming.Utils
         {
             FindRoot(x);
 
-            return DiffWeight[x];
+            return _diffWeight[x];
         }
 
         /// <summary>
@@ -96,21 +96,21 @@ namespace CompetitiveProgramming.Utils
 
             if (x == y) return;
 
-            if (Rank[x] < Rank[y])
+            if (_rank[x] < _rank[y])
             {
-                ParentId[x] = y;
-                Size[y] += Size[x];
-                DiffWeight[x] = -w;
+                _parentId[x] = y;
+                _size[y] += _size[x];
+                _diffWeight[x] = -w;
             }
             else
             {
-                ParentId[y] = x;
-                Size[x] += Size[y];
-                DiffWeight[y] = w;
+                _parentId[y] = x;
+                _size[x] += _size[y];
+                _diffWeight[y] = w;
 
-                if (Rank[x] == Rank[y])
+                if (_rank[x] == _rank[y])
                 {
-                    Rank[x]++;
+                    _rank[x]++;
                 }
             }
         }
@@ -124,7 +124,7 @@ namespace CompetitiveProgramming.Utils
         {
             x = FindRoot(x);
 
-            return Size[x];
+            return _size[x];
         }
     }
 
@@ -132,23 +132,9 @@ namespace CompetitiveProgramming.Utils
     /// アイテムを含むUF木
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    class UnionFind<T> where T : new()
+    public class UnionFind<T> where T : new()
     {
-        public class Node
-        {
-            public T Item { get; set; }
-            public int Rank { get; set; }
-            public int ParentId { get; set; }
-
-            public Node(T item, int rank, int parent)
-            {
-                Item = item;
-                Rank = rank;
-                ParentId = parent;
-            }
-        }
-
-        public List<Node> Nodes { get; set; }
+        public List<Node> Nodes { get; private set; }
 
         public UnionFind(int size)
         {
@@ -197,6 +183,20 @@ namespace CompetitiveProgramming.Utils
                 {
                     Nodes[y].Rank++;
                 }
+            }
+        }
+
+        public class Node
+        {
+            public T Item { get; set; }
+            public int Rank { get; set; }
+            public int ParentId { get; set; }
+
+            public Node(T item, int rank, int parent)
+            {
+                Item = item;
+                Rank = rank;
+                ParentId = parent;
             }
         }
     }

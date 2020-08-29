@@ -13,13 +13,13 @@ namespace CompetitiveProgramming.Utils
     public class RollingHash
     {
         // 衝突防止で、複数個のmodを指定しておく
-        static readonly long[] Mods = { 999999893, 999999937 };
+        private static readonly long[] _mods = { 999999893, 999999937 };
 
         public string S { get; private set; }
 
-        readonly int Base;
-        readonly long[,] Hashes;
-        readonly long[,] Powers;
+        private readonly int _base;
+        private readonly long[,] _hashes;
+        private readonly long[,] _powers;
 
         /// <summary>
         /// 初期化
@@ -34,11 +34,11 @@ namespace CompetitiveProgramming.Utils
             S = s;
 
             if (b <= 0) { b = new Random().Next(0x111, 0x1111); }
-            Base = b;
+            _base = b;
 
-            Hashes = new long[Mods.Length, s.Length + 1];
-            Powers = new long[Mods.Length, s.Length + 1];
-            BuildTable(s, b, Mods, Hashes, Powers);
+            _hashes = new long[_mods.Length, s.Length + 1];
+            _powers = new long[_mods.Length, s.Length + 1];
+            BuildTable(s, b, _mods, _hashes, _powers);
         }
 
         /// <summary>
@@ -46,12 +46,12 @@ namespace CompetitiveProgramming.Utils
         /// </summary>
         /// <param name="s">文字列</param>
         public RollingHash CreateComparable(string s)
-            => new RollingHash(s, Base);
+            => new RollingHash(s, _base);
 
         /// <summary>
         /// 演算用のテーブル初期化
         /// </summary>
-        void BuildTable(string s, int b, long[] mods, long[,] hashes, long[,] powers)
+        private void BuildTable(string s, int b, long[] mods, long[,] hashes, long[,] powers)
         {
             for (int i = 0; i < mods.Length; i++)
             {
@@ -67,10 +67,10 @@ namespace CompetitiveProgramming.Utils
         /// <summary>
         /// Mods[i]におけるS[l,r)のハッシュを取得
         /// </summary>
-        long GetHash(int l, int r, int i)
+        private long GetHash(int l, int r, int i)
         {
-            var res = (Hashes[i, r] - Hashes[i, l] * Powers[i, r - l]) % Mods[i];
-            if (res < 0) res += Mods[i];
+            var res = (_hashes[i, r] - _hashes[i, l] * _powers[i, r - l]) % _mods[i];
+            if (res < 0) res += _mods[i];
 
             return res;
         }
@@ -84,7 +84,7 @@ namespace CompetitiveProgramming.Utils
         /// </remarks>
         public long[] GetHashes(int l, int r)
         {
-            return Enumerable.Range(0, Mods.Length)
+            return Enumerable.Range(0, _mods.Length)
                 .Select(x => GetHash(l, r, x))
                 .ToArray();
         }
@@ -102,7 +102,7 @@ namespace CompetitiveProgramming.Utils
                 return false;
             }
 
-            for (int i = 0; i < Mods.Length; i++)
+            for (int i = 0; i < _mods.Length; i++)
             {
                 if (GetHash(l1, l1 + len, i) != other.GetHash(l2, l2 + len, i))
                 {

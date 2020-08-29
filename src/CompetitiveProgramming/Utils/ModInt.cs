@@ -28,7 +28,7 @@ namespace CompetitiveProgramming.Utils
     public struct ModInt : IEquatable<ModInt>
     {
         public int M { get; private set; }
-        private readonly int N;
+        private readonly int _data;
 
         /// <summary>
         /// 
@@ -37,7 +37,7 @@ namespace CompetitiveProgramming.Utils
         /// <param name="mod">M</param>
         public ModInt(int n, int mod = (int)1e9 + 7)
         {
-            N = n % mod;
+            _data = n % mod;
             M = mod;
         }
 
@@ -101,7 +101,7 @@ namespace CompetitiveProgramming.Utils
             return r;
         }
 
-        public override string ToString() => N.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        public override string ToString() => _data.ToString(System.Globalization.CultureInfo.InvariantCulture);
 
         #region Combinatorics
         /// <summary>
@@ -166,7 +166,7 @@ namespace CompetitiveProgramming.Utils
         #region Operator, Alias
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static implicit operator int(ModInt a)
-            => a.N;
+            => a._data;
 
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static ModInt operator +(ModInt a, int b)
@@ -253,7 +253,7 @@ namespace CompetitiveProgramming.Utils
 
         #region Misc
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        static void Swap<T>(ref T a, ref T b)
+        private static void Swap<T>(ref T a, ref T b)
         {
             T temp = a;
             a = b;
@@ -268,7 +268,7 @@ namespace CompetitiveProgramming.Utils
         public bool Equals(ModInt other)
         {
             return M == other.M &&
-                   N == other.N;
+                   _data == other._data;
         }
 
         public override int GetHashCode()
@@ -277,7 +277,7 @@ namespace CompetitiveProgramming.Utils
             {
                 var hashCode = 1358463657;
                 hashCode = hashCode * -1521134295 + M.GetHashCode();
-                hashCode = hashCode * -1521134295 + N.GetHashCode();
+                hashCode = hashCode * -1521134295 + _data.GetHashCode();
                 return hashCode;
             }
         }
@@ -292,14 +292,14 @@ namespace CompetitiveProgramming.Utils
     {
         public int M { get; private set; }
         // 階乗テーブル
-        private int[] factorials;
+        private int[] _factorials;
         // 逆元テーブル
-        private int[] invs;
+        private int[] _invs;
         // 階乗の逆元テーブル
-        private int[] finvs;
+        private int[] _finvs;
         // 繰り返し計算するならテーブルを作成する
         // テーブル作るコストもそれなりに大きいので基本は作らない
-        private readonly int maxTableSize;
+        private readonly int _maxTableSize;
 
         /// <summary>
         /// 
@@ -309,7 +309,7 @@ namespace CompetitiveProgramming.Utils
         public ModCom(int mod = (int)1e9 + 7, int tableSize = 0)
         {
             M = mod;
-            maxTableSize = tableSize;
+            _maxTableSize = tableSize;
         }
 
         /// <summary>
@@ -322,12 +322,12 @@ namespace CompetitiveProgramming.Utils
                 return 0;
             }
 
-            if (n <= maxTableSize)
+            if (n <= _maxTableSize)
             {
                 MakeTable(n);
-                if (factorials != null && n <= factorials.Length)
+                if (_factorials != null && n <= _factorials.Length)
                 {
-                    return Mul(factorials[n], finvs[n - r]);
+                    return Mul(_factorials[n], _finvs[n - r]);
                 }
             }
 
@@ -353,12 +353,12 @@ namespace CompetitiveProgramming.Utils
             }
 
             r = Math.Min(r, n - r);
-            if (n <= maxTableSize)
+            if (n <= _maxTableSize)
             {
                 MakeTable(n);
-                if (factorials != null && n <= factorials.Length)
+                if (_factorials != null && n <= _factorials.Length)
                 {
-                    return Mul(Npr(n, r), finvs[r]);
+                    return Mul(Npr(n, r), _finvs[r]);
                 }
             }
 
@@ -384,53 +384,53 @@ namespace CompetitiveProgramming.Utils
         /// <summary>
         /// n以下の各テーブルを作成する
         /// </summary>
-        void MakeTable(int n)
+        private void MakeTable(int n)
         {
-            if (n > maxTableSize)
+            if (n > _maxTableSize)
             {
                 throw new ArgumentOutOfRangeException(nameof(n));
             }
 
-            if (factorials == null)
+            if (_factorials == null)
             {
-                factorials = Enumerable.Repeat(1, 2).ToArray();
-                invs = Enumerable.Repeat(1, 2).ToArray();
-                finvs = Enumerable.Repeat(1, 2).ToArray();
+                _factorials = Enumerable.Repeat(1, 2).ToArray();
+                _invs = Enumerable.Repeat(1, 2).ToArray();
+                _finvs = Enumerable.Repeat(1, 2).ToArray();
             }
 
-            if (n < factorials.Length)
+            if (n < _factorials.Length)
             {
                 return;
             }
-            var begin = factorials.Length;
+            var begin = _factorials.Length;
 
-            Array.Resize(ref factorials, n + 1);
-            Array.Resize(ref invs, n + 1);
-            Array.Resize(ref finvs, n + 1);
+            Array.Resize(ref _factorials, n + 1);
+            Array.Resize(ref _invs, n + 1);
+            Array.Resize(ref _finvs, n + 1);
 
             for (int i = begin; i <= n; i++)
             {
-                factorials[i] = Mul(factorials[i - 1], i);
-                invs[i] = M - Mul(invs[M % i], M / i);
-                finvs[i] = Mul(finvs[i - 1], invs[i]);
+                _factorials[i] = Mul(_factorials[i - 1], i);
+                _invs[i] = M - Mul(_invs[M % i], M / i);
+                _finvs[i] = Mul(_finvs[i - 1], _invs[i]);
             }
         }
 
         #region Misc
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        int Mul(int a, int b)
+        private int Mul(int a, int b)
             => (int)(((long)(a % M) * (b % M)) % M);
 
         /// <summary> a/b </summary>
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        int Div(int a, int b)
+        private int Div(int a, int b)
             => Mul(a, Inverse(b));
 
         /// <summary>
         /// aの逆元（a^-1）
         /// （厳密には違うが）Mは素数とする
         /// </summary>
-        int Inverse(int a)
+        private int Inverse(int a)
         {
             int b = M;
             int u = 1, v = 0;

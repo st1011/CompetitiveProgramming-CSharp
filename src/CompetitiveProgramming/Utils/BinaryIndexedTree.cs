@@ -6,10 +6,9 @@ namespace CompetitiveProgramming.Utils
     /// 区間内総和
     /// Binary Indexed Tree(BIT)による
     /// </summary>
-    class RangeSumQuery
+    public class RangeSumQuery
     {
-        readonly int N;
-        readonly int[] Data;
+        private readonly int[] _data;
 
         /// <summary>
         /// 
@@ -18,8 +17,7 @@ namespace CompetitiveProgramming.Utils
         /// <param name="v">ノードの初期値</param>
         public RangeSumQuery(int n, int v = 0)
         {
-            N = n + 1;
-            Data = Enumerable.Repeat(v, N).ToArray();
+            _data = Enumerable.Repeat(v, n + 1).ToArray();
         }
 
         /// <summary>
@@ -29,9 +27,9 @@ namespace CompetitiveProgramming.Utils
         /// <param name="v">加算する値</param>
         public void Add(int k, int v)
         {
-            while (k < Data.Length)
+            while (k < _data.Length)
             {
-                Data[k] += v;
+                _data[k] += v;
                 k += k & -k;
             }
         }
@@ -46,7 +44,7 @@ namespace CompetitiveProgramming.Utils
             long sum = 0;
             while (k > 0)
             {
-                sum += Data[k];
+                sum += _data[k];
                 k -= k & -k;
             }
 
@@ -74,10 +72,9 @@ namespace CompetitiveProgramming.Utils
     /// https://atcoder.jp/contests/arc033/tasks/arc033_3
     /// Binary Indexed Tree(BIT)による
     /// </summary>
-    class MinOrderQuery
+    public class MinOrderQuery
     {
-        readonly int N;
-        readonly int[] Data;
+        private readonly int[] _data;
 
         /// <summary>
         /// 
@@ -86,8 +83,7 @@ namespace CompetitiveProgramming.Utils
         /// <param name="v">ノードの初期値</param>
         public MinOrderQuery(int n, int v = 0)
         {
-            N = n + 1;
-            Data = Enumerable.Repeat(v, N).ToArray();
+            _data = Enumerable.Repeat(v, n + 1).ToArray();
         }
 
         /// <summary>
@@ -95,11 +91,11 @@ namespace CompetitiveProgramming.Utils
         /// </summary>
         /// <param name="k"></param>
         /// <param name="v"></param>
-        void Add(int k, int v)
+        private void Add(int k, int v)
         {
-            while (k < Data.Length)
+            while (k < _data.Length)
             {
-                Data[k] += v;
+                _data[k] += v;
                 k += k & -k;
             }
         }
@@ -124,7 +120,7 @@ namespace CompetitiveProgramming.Utils
             long sum = 0;
             while (k > 0)
             {
-                sum += Data[k];
+                sum += _data[k];
                 k -= k & -k;
             }
 
@@ -153,7 +149,7 @@ namespace CompetitiveProgramming.Utils
         /// <returns></returns>
         public int Find(int x)
         {
-            int low = 0, high = N;
+            int low = 0, high = _data.Length;
             while (low < high)
             {
                 var mid = (low + high) / 2;

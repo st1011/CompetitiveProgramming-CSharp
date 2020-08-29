@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace CompetitiveProgramming.Utils
 {
-    class LongestPath
+    public static class LongestPath
     {
         /// <summary>
         /// **最長** 経路
@@ -13,8 +13,11 @@ namespace CompetitiveProgramming.Utils
         /// <param name="nodes">ノードの接続先ノード番号</param>
         /// <param name="nodeEnter">ノードに入ってくる辺の数。破壊的操作あり</param>
         /// <returns></returns>
-        private static List<int> Bfs(List<List<int>> nodes, List<int> nodeEnter)
+        public static List<int> Bfs(List<List<int>> nodes, List<int> nodeEnter)
         {
+            if (nodes == null) { throw new ArgumentNullException(nameof(nodes)); }
+            if (nodeEnter == null) { throw new ArgumentNullException(nameof(nodeEnter)); }
+
             var n = nodes.Count;
 
             // （始点となる）誰からも接続されていないノードを追加する

@@ -55,7 +55,7 @@ namespace CompetitiveProgramming.Utils
         }
 
         #region LDS Sample
-        static int LdsLengthInt(IReadOnlyList<int> nums, bool isStrong = true)
+        private static int LdsLengthInt(IReadOnlyList<int> nums, bool isStrong = true)
         {
             return LdsLength(nums, int.MaxValue, x => int.MaxValue - 1 - x, isStrong);
         }
@@ -66,7 +66,7 @@ namespace CompetitiveProgramming.Utils
             /// <summary>
             /// Bound系の下請け
             /// </summary>
-            static int FindBound<T>(IList<T> list, T v, int begin, int end, Func<T, T, bool> judge) where T : IComparable<T>
+            private static int FindBound<T>(IList<T> list, T v, int begin, int end, Func<T, T, bool> judge) where T : IComparable<T>
             {
                 int low = begin, high = end;
 

@@ -10,19 +10,19 @@ namespace CompetitiveProgramming.Utils
     {
         // 変な改行コードがたまに混じっているので、一応セパレート指定する
         // スペース単独指定の方がもちろん早い
-        static readonly char[] separator = { ' ', '\r', '\n' };
-        readonly StreamReader sr;
-        readonly Queue<string> queue;
+        private static readonly char[] _separator = { ' ', '\r', '\n' };
+        private readonly StreamReader _streamReader;
+        private readonly Queue<string> _queue;
 
         /// <summary>
         /// 特定のファイルから読み出したい場合はpath指定する
         /// </summary>
         public Input(string path = "")
         {
-            queue = new Queue<string>();
+            _queue = new Queue<string>();
 
-            if (string.IsNullOrEmpty(path)) { sr = new StreamReader(Console.OpenStandardInput()); }
-            else { sr = new StreamReader(path); }
+            if (string.IsNullOrEmpty(path)) { _streamReader = new StreamReader(Console.OpenStandardInput()); }
+            else { _streamReader = new StreamReader(path); }
         }
 
         /// <summary>
@@ -42,8 +42,8 @@ namespace CompetitiveProgramming.Utils
         {
             if (string.IsNullOrEmpty(s)) return false;
 
-            foreach (var elem in s.Trim().Split(separator, StringSplitOptions.RemoveEmptyEntries))
-                queue.Enqueue(elem);
+            foreach (var elem in s.Trim().Split(_separator, StringSplitOptions.RemoveEmptyEntries))
+                _queue.Enqueue(elem);
 
             return true;
         }
@@ -51,18 +51,18 @@ namespace CompetitiveProgramming.Utils
         /// <summary>
         /// 要素が存在するか
         /// </summary>
-        public bool Any() => queue.Any() || Read();
+        public bool Any() => _queue.Any() || Read();
 
         /// <summary>
         /// 内部queueに入力からの値をsplitして格納する
         /// </summary>
-        bool Read()
+        private bool Read()
         {
-            if (!SetText(sr.ReadLine())) return false;
+            if (!SetText(_streamReader.ReadLine())) return false;
 
-            if (!queue.Any()) return Read();
+            if (!_queue.Any()) return Read();
 
-            return queue.Any();
+            return _queue.Any();
         }
 
         /// <summary>
@@ -70,17 +70,17 @@ namespace CompetitiveProgramming.Utils
         /// </summary>
         public string Next()
         {
-            if (!queue.Any() && !Read()) return "";
+            if (!_queue.Any() && !Read()) return "";
 
-            return queue.Dequeue();
+            return _queue.Dequeue();
         }
 
         /// <summary>
         /// 指定個数queueにたまるまでenqueueし続ける
         /// </summary>
-        bool Accumulate(int n)
+        private bool Accumulate(int n)
         {
-            while (queue.Count < n)
+            while (_queue.Count < n)
                 if (!Read()) return false;
 
             return true;
@@ -93,14 +93,14 @@ namespace CompetitiveProgramming.Utils
         /// <summary>
         /// n個の要素をparseして、それぞれにoffsetをaddした配列を返す
         /// </summary>
-        T[] NextT<T>(int n, T offset, Func<string, T> parse, Func<T, T, T> add)
+        private T[] NextT<T>(int n, T offset, Func<string, T> parse, Func<T, T, T> add)
         {
             if (!Accumulate(n)) return null;
 
             var a = new T[n];
 
             for (int i = 0; i < n; i++)
-                a[i] = add(parse(queue.Dequeue()), offset);
+                a[i] = add(parse(_queue.Dequeue()), offset);
 
             return a;
         }
@@ -111,18 +111,18 @@ namespace CompetitiveProgramming.Utils
         public double[] NextDouble(int n, double offset = 0.0) => NextT(n, offset, double.Parse, (x, y) => x + y);
 
         #region IDisposable Support
-        private bool disposedValue = false; // 重複する呼び出しを検出するには
+        private bool _disposedValue = false; // 重複する呼び出しを検出するには
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (!_disposedValue)
             {
                 if (disposing)
                 {
-                    sr.Dispose();
+                    _streamReader.Dispose();
                 }
 
-                disposedValue = true;
+                _disposedValue = true;
             }
         }
 

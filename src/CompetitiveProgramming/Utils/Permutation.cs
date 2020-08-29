@@ -8,7 +8,7 @@ namespace CompetitiveProgramming.Utils
     /// </summary>
     static class Permutation
     {
-        static bool NextPermutation<T>(T[] array, int index, int length, Comparison<T> comp)
+        private static bool NextPermutation<T>(T[] array, int index, int length, Comparison<T> comp)
         {
             if (length <= 1) return false;
             for (int i = length - 1; i > 0; i--)
@@ -26,7 +26,7 @@ namespace CompetitiveProgramming.Utils
             return false;
         }
 
-        static void Swap<T>(ref T x, ref T y) { T tmp = x; x = y; y = tmp; }
+        private static void Swap<T>(ref T x, ref T y) { T tmp = x; x = y; y = tmp; }
 
         /// <summary>
         /// 一度呼び出すと、arrayを次の順列へ置き換える

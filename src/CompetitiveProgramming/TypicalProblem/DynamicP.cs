@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace CompetitiveProgramming.TypicalProblem
 {
-    static class DynamicP
+    public static class DynamicP
     {
         static int Solve(List<int> coins, int target)
         {

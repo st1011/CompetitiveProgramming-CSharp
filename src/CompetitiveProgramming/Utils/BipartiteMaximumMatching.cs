@@ -13,15 +13,16 @@ namespace CompetitiveProgramming.Utils
     /// Hopcroft-Karp
     /// O(E sqrt(V))
     /// </summary>
-    class BipartiteMaximumMatching
+    public class BipartiteMaximumMatching
     {
         // 前半が左側のノード、続いて右側のノードが存在するとして扱う
-        readonly List<int>[] G;
+        private readonly List<int>[] _nodes;
 
         // 最大マッチングの時の相手
-        readonly int[] Match;
+        private readonly int[] _matches;
 
-        readonly int lV, rV;
+        private readonly int _leftNodeCount;
+        private readonly int _rightNodeCount;
 
         /// <summary>
         /// 
@@ -32,14 +33,14 @@ namespace CompetitiveProgramming.Utils
         {
             var v = lv + rv;
 
-            G = Enumerable.Range(0, v)
+            _nodes = Enumerable.Range(0, v)
                 .Select(_ => new List<int>())
                 .ToArray();
 
-            Match = Enumerable.Repeat(-1, v).ToArray();
+            _matches = Enumerable.Repeat(-1, v).ToArray();
 
-            lV = lv;
-            rV = rv;
+            _leftNodeCount = lv;
+            _rightNodeCount = rv;
         }
 
         /// <summary>
@@ -49,11 +50,11 @@ namespace CompetitiveProgramming.Utils
         /// <param name="r">0-index</param>
         public void Add(int l, int r)
         {
-            G[l].Add(r + lV);
-            G[r + lV].Add(l);
+            _nodes[l].Add(r + _leftNodeCount);
+            _nodes[r + _leftNodeCount].Add(l);
         }
 
-        void Bfs(int[] dist, bool[] matched)
+        private void Bfs(int[] dist, bool[] matched)
         {
             for (int i = 0; i < dist.Length; i++)
             {
@@ -61,7 +62,7 @@ namespace CompetitiveProgramming.Utils
             }
 
             var q = new Queue<int>();
-            for (int i = 0; i < G.Length; i++)
+            for (int i = 0; i < _nodes.Length; i++)
             {
                 if (!matched[i])
                 {
@@ -73,9 +74,9 @@ namespace CompetitiveProgramming.Utils
             while (q.Any())
             {
                 var v = q.Dequeue();
-                foreach (var e in G[v])
+                foreach (var e in _nodes[v])
                 {
-                    var next = Match[e];
+                    var next = _matches[e];
                     if (next >= 0 && dist[next] < 0)
                     {
                         dist[next] = dist[v] + 1;
@@ -85,17 +86,17 @@ namespace CompetitiveProgramming.Utils
             }
         }
 
-        bool Dfs(int v, int[] dist, bool[] matched, bool[] seen)
+        private bool Dfs(int v, int[] dist, bool[] matched, bool[] seen)
         {
             if (seen[v]) { return false; }
 
             seen[v] = true;
-            foreach (var e in G[v])
+            foreach (var e in _nodes[v])
             {
-                var next = Match[e];
+                var next = _matches[e];
                 if (next < 0 || (!seen[next] && dist[next] == dist[v] + 1 && Dfs(next, dist, matched, seen)))
                 {
-                    Match[e] = v;
+                    _matches[e] = v;
                     matched[v] = true;
 
                     return true;
@@ -108,24 +109,24 @@ namespace CompetitiveProgramming.Utils
         /// <summary>
         /// 最大二部マッチング演算
         /// </summary>
-        int SolveMatching()
+        private int SolveMatching()
         {
-            var dist = new int[G.Length];
-            var matched = new bool[G.Length];
-            var seen = new bool[G.Length];
+            var dist = new int[_nodes.Length];
+            var matched = new bool[_nodes.Length];
+            var seen = new bool[_nodes.Length];
 
             int matchCount = 0;
             while (true)
             {
                 Bfs(dist, matched);
 
-                for (int i = 0; i < G.Length; i++)
+                for (int i = 0; i < _nodes.Length; i++)
                 {
                     seen[i] = false;
                 }
 
                 int flow = 0;
-                for (int i = 0; i < G.Length; i++)
+                for (int i = 0; i < _nodes.Length; i++)
                 {
                     if (!matched[i] && Dfs(i, dist, matched, seen))
                     {
@@ -156,17 +157,17 @@ namespace CompetitiveProgramming.Utils
         {
             var n = SolveMatching();
 
-            var l = new int[lV];
-            var r = new int[rV];
+            var l = new int[_leftNodeCount];
+            var r = new int[_rightNodeCount];
 
-            Array.Copy(Match, 0, l, 0, lV);
-            Array.Copy(Match, lV, r, 0, rV);
+            Array.Copy(_matches, 0, l, 0, _leftNodeCount);
+            Array.Copy(_matches, _leftNodeCount, r, 0, _rightNodeCount);
 
             for (int i = 0; i < l.Length; i++)
             {
                 if (l[i] >= 0)
                 {
-                    l[i] -= lV;
+                    l[i] -= _leftNodeCount;
                 }
             }
 

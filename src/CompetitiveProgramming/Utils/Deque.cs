@@ -13,17 +13,17 @@ namespace CompetitiveProgramming.Utils
     /// </summary>
     public class ArrayDeque<T> : IEnumerable<T>, IEnumerable
     {
-        private const int DefaultCapacity = 4;
+        private const int _defaultCapacity = 4;
 
-        private T[] Array;
-        private int Head;
+        private T[] _data;
+        private int _head;
 
         public int Count { get; private set; }
 
         public T this[int index]
         {
-            get { return Array[(Head + index) % Array.Length]; }
-            set { Array[(Head + index) % Array.Length] = value; }
+            get { return _data[(_head + index) % _data.Length]; }
+            set { _data[(_head + index) % _data.Length] = value; }
         }
 
         /// <summary>
@@ -31,8 +31,8 @@ namespace CompetitiveProgramming.Utils
         /// </summary>
         public ArrayDeque()
         {
-            Array = new T[DefaultCapacity];
-            Head = 0;
+            _data = new T[_defaultCapacity];
+            _head = 0;
             Count = 0;
         }
 
@@ -41,7 +41,7 @@ namespace CompetitiveProgramming.Utils
         /// </summary>
         public ArrayDeque(IEnumerable<T> collection)
         {
-            Head = 0;
+            _head = 0;
             var arr = collection.ToArray();
 
             var m = 1;
@@ -50,8 +50,8 @@ namespace CompetitiveProgramming.Utils
                 m *= 2;
             }
 
-            Array = new T[m];
-            arr.CopyTo(Array, 0);
+            _data = new T[m];
+            arr.CopyTo(_data, 0);
             Count = arr.Length;
         }
 
@@ -61,30 +61,30 @@ namespace CompetitiveProgramming.Utils
         /// </summary>
         private void Add(int i, T x)
         {
-            if (Count + 1 >= Array.Length)
+            if (Count + 1 >= _data.Length)
             {
                 Resize();
             }
 
             if (i < Count / 2)
             {
-                Head = (Head == 0) ? Array.Length - 1 : Head - 1;
+                _head = (_head == 0) ? _data.Length - 1 : _head - 1;
                 for (int k = 0; k <= i - 1; k++)
                 {
-                    Array[(Head + k) % Array.Length]
-                        = Array[(Head + k + 1) % Array.Length];
+                    _data[(_head + k) % _data.Length]
+                        = _data[(_head + k + 1) % _data.Length];
                 }
             }
             else
             {
                 for (int k = Count; k > i; k--)
                 {
-                    Array[(Head + k) % Array.Length]
-                        = Array[(Head + k - 1) % Array.Length];
+                    _data[(_head + k) % _data.Length]
+                        = _data[(_head + k - 1) % _data.Length];
                 }
             }
 
-            Array[(Head + i) % Array.Length] = x;
+            _data[(_head + i) % _data.Length] = x;
             Count++;
         }
 
@@ -93,29 +93,29 @@ namespace CompetitiveProgramming.Utils
         /// </summary>
         private T Remove(int i)
         {
-            var x = Array[(Head + 1) % Array.Length];
+            var x = _data[(_head + 1) % _data.Length];
 
             if (i < Count / 2)
             {
                 for (int k = i; k > 0; k--)
                 {
-                    Array[(Head + k) % Array.Length]
-                        = Array[(Head + k - 1) % Array.Length];
+                    _data[(_head + k) % _data.Length]
+                        = _data[(_head + k - 1) % _data.Length];
                 }
 
-                Head = (Head + 1) % Array.Length;
+                _head = (_head + 1) % _data.Length;
             }
             else
             {
                 for (int k = i; k < Count - i; k++)
                 {
-                    Array[(Head + k) % Array.Length]
-                        = Array[(Head + k + 1) % Array.Length];
+                    _data[(_head + k) % _data.Length]
+                        = _data[(_head + k + 1) % _data.Length];
                 }
             }
 
             Count--;
-            if (3 * Count < Array.Length)
+            if (3 * Count < _data.Length)
             {
                 Resize();
             }
@@ -128,14 +128,14 @@ namespace CompetitiveProgramming.Utils
         /// </summary>
         private void Resize()
         {
-            var arr = new T[Math.Max(DefaultCapacity, 2 * Count)];
+            var arr = new T[Math.Max(_defaultCapacity, 2 * Count)];
             for (int k = 0; k < Count; k++)
             {
-                arr[k] = Array[(Head + k) % Array.Length];
+                arr[k] = _data[(_head + k) % _data.Length];
             }
 
-            Array = arr;
-            Head = 0;
+            _data = arr;
+            _head = 0;
         }
 
         /// <summary>
@@ -174,9 +174,9 @@ namespace CompetitiveProgramming.Utils
         /// </summary>
         public void Clear()
         {
-            System.Array.Clear(Array, 0, Array.Length);
+            System.Array.Clear(_data, 0, _data.Length);
             Count = 0;
-            Head = 0;
+            _head = 0;
         }
 
         /// <summary>

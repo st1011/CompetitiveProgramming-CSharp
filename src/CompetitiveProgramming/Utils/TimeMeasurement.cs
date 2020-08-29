@@ -10,7 +10,7 @@ namespace CompetitiveProgramming.Utils
 {
     public static class Time
     {
-        private static readonly long NanosecondsPerTick = (1000L * 1000L * 1000L) / Stopwatch.Frequency;
+        private static readonly long _nanosecondsPerTick = (1000L * 1000L * 1000L) / Stopwatch.Frequency;
 
         /// <summary>
         /// 計測精度の表示
@@ -31,7 +31,7 @@ namespace CompetitiveProgramming.Utils
             Console.WriteLine("  Timer frequency in ticks per second = {0}",
                 frequency);
             Console.WriteLine("  Timer is accurate within {0} nanoseconds",
-                NanosecondsPerTick);
+                _nanosecondsPerTick);
         }
 
         /// <summary>
@@ -129,7 +129,7 @@ namespace CompetitiveProgramming.Utils
                 throw new ArgumentException($"{nameof(divisor)} cannot be 0.", nameof(divisor));
             }
 
-            long nanosec = ticks * NanosecondsPerTick / divisor;
+            long nanosec = ticks * _nanosecondsPerTick / divisor;
             string[] list =
             {
                 $"{nanosec / (1000 * 1000)} milliseconds",

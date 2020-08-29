@@ -16,7 +16,7 @@ namespace CompetitiveProgramming.Utils
     /// 素因数分解
     /// 素数列挙（エラトステネスの篩）
     /// </summary>
-    static class Prime
+    public static class Prime
     {
         /// <summary>
         /// 素数判定

@@ -76,14 +76,14 @@ namespace CompetitiveProgramming.Utils
         }
 
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        static int Mul(int a, int b, int M)
+        private static int Mul(int a, int b, int M)
             => (int)(((long)(a % M) * (b % M)) % M);
 
         /// <summary>
         /// x^y
         /// 繰り返し二乗法
         /// </summary>
-        static int Power(int a, int b, int M)
+        private static int Power(int a, int b, int M)
         {
             var r = 1;
 

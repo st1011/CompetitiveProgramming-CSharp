@@ -31,7 +31,7 @@
     <WarningLevel>4</WarningLevel>
     <LangVersion>6</LangVersion>
     <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
-    <CodeAnalysisRuleSet>CompetitiveProgramming.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>competitiveprogramming.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -41,7 +41,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <CodeAnalysisRuleSet>CompetitiveProgramming.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>competitiveprogramming.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject />

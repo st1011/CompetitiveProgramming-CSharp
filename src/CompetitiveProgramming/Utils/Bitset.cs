@@ -8,28 +8,28 @@ namespace CompetitiveProgramming.Utils
     /// </summary>
     struct Bitset
     {
-        readonly BitArray Bits;
+        private readonly BitArray _bits;
 
         public int this[int i]
         {
-            set { Bits[i] = value != 0; }
-            get { return Bits[i] ? 1 : 0; }
+            set { _bits[i] = value != 0; }
+            get { return _bits[i] ? 1 : 0; }
         }
 
         public Bitset(int n)
         {
-            Bits = new BitArray(n);
+            _bits = new BitArray(n);
         }
 
-        Bitset(BitArray arr)
+        public Bitset(BitArray arr)
         {
-            Bits = arr.Clone() as BitArray;
+            _bits = arr.Clone() as BitArray;
         }
 
         public static implicit operator long(Bitset a)
         {
             int[] num = new int[2];
-            a.Bits.CopyTo(num, 0);
+            a._bits.CopyTo(num, 0);
 
             long s = 0;
             for (int i = num.Length - 1; i >= 0; i--)
@@ -47,7 +47,7 @@ namespace CompetitiveProgramming.Utils
             return new Bitset(bits);
         }
 
-        public void Reset() => Bits.SetAll(false);
+        public void Reset() => _bits.SetAll(false);
 
         public override string ToString()
         {

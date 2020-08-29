@@ -16,11 +16,11 @@ namespace CompetitiveProgramming.Utils
     /// 構築O(N logN)
     /// クエリO(1)
     /// </remarks>
-    class SparseTable<T>
+    public class SparseTable<T>
     {
-        readonly T[][] st;
-        readonly int[] lookupTable;
-        readonly Func<T, T, T> Monoid;
+        private readonly T[][] _st;
+        private readonly int[] _lookupTable;
+        private readonly Func<T, T, T> _monoid;
 
         /// <summary>
         /// テーブルの構築
@@ -29,7 +29,8 @@ namespace CompetitiveProgramming.Utils
         /// <param name="monoid">モノイド</param>
         public SparseTable(IReadOnlyList<T> ie, Func<T, T, T> monoid)
         {
-            Monoid = monoid;
+            if (ie == null) { throw new ArgumentNullException(nameof(ie)); }
+            _monoid = monoid;
 
             var b = 0;
             while ((1 << b) <= ie.Count)
@@ -37,27 +38,27 @@ namespace CompetitiveProgramming.Utils
                 ++b;
             }
 
-            lookupTable = new int[ie.Count + 1];
-            for (var i = 2; i < lookupTable.Length; i++)
+            _lookupTable = new int[ie.Count + 1];
+            for (var i = 2; i < _lookupTable.Length; i++)
             {
-                lookupTable[i] = lookupTable[i >> 1] + 1;
+                _lookupTable[i] = _lookupTable[i >> 1] + 1;
             }
 
             var l2 = 1 << b;
 
-            st = Enumerable.Range(0, b)
+            _st = Enumerable.Range(0, b)
                 .Select(_ => new T[l2])
                 .ToArray();
             for (var i = 0; i < ie.Count; i++)
             {
-                st[0][i] = ie[i];
+                _st[0][i] = ie[i];
             }
 
             for (var i = 1; i < b; i++)
             {
                 for (var j = 0; j + (1 << i) <= l2; j++)
                 {
-                    st[i][j] = monoid(st[i - 1][j], st[i - 1][j + (1 << (i - 1))]);
+                    _st[i][j] = monoid(_st[i - 1][j], _st[i - 1][j + (1 << (i - 1))]);
                 }
             }
         }
@@ -67,9 +68,9 @@ namespace CompetitiveProgramming.Utils
         /// </summary>
         public T Find(int b, int e)
         {
-            var dist = lookupTable[e - b];
+            var dist = _lookupTable[e - b];
 
-            return Monoid(st[dist][b], st[dist][e - (1 << dist)]);
+            return _monoid(_st[dist][b], _st[dist][e - (1 << dist)]);
         }
     }
 }
