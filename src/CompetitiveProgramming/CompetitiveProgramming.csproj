@@ -68,7 +68,7 @@
     <Compile Include="Utils\LowestCommonAncestor.cs" />
     <Compile Include="Utils\BinaryIndexedTree.cs" />
     <Compile Include="Utils\BipartiteMaximumMatching.cs" />
-    <Compile Include="Utils\MicCostFlow.cs" />
+    <Compile Include="Utils\MinCostFlow.cs" />
     <Compile Include="Utils\RollingHash.cs" />
     <Compile Include="Utils\Bitset.cs" />
     <Compile Include="Utils\Deque.cs" />
