@@ -17,7 +17,7 @@ namespace CompetitiveProgramming.Utils
         public int Length { get; }
 
         private readonly int[,] _dp;
-        private T[] _lcs;
+        private IReadOnlyList<T> _lcs;
 
         public LongestCommonSubsequence(IReadOnlyList<T> x, IReadOnlyList<T> y)
         {
@@ -62,7 +62,7 @@ namespace CompetitiveProgramming.Utils
         /// <summary>
         /// LCSの計算用テーブルからLCSを復元する
         /// </summary>
-        private T[] RestoreLcs(IReadOnlyList<T> x, int[,] l)
+        private IReadOnlyList<T> RestoreLcs(IReadOnlyList<T> x, int[,] l)
         {
             var i = l.GetLength(0) - 1;
             var j = l.GetLength(1) - 1;
@@ -92,7 +92,7 @@ namespace CompetitiveProgramming.Utils
         /// <summary>
         /// LCSを取得
         /// </summary>
-        public T[] GetLcs()
+        public IReadOnlyList<T> GetLcs()
         {
             if (_lcs == null)
             {

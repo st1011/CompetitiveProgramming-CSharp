@@ -120,7 +120,7 @@ namespace CompetitiveProgramming.Utils
         /// <summary>
         /// 強連結成分ごとのリストを返却
         /// </summary>
-        public List<List<int>> Sccs()
+        public IReadOnlyList<IReadOnlyList<int>> Sccs()
         {
             if (!_sccs.Any()) Resolve();
 
@@ -131,7 +131,7 @@ namespace CompetitiveProgramming.Utils
         /// 強連結成分ごとに独立な番号を格納した配列を返却
         /// (Union Findみたいな感じ)
         /// </summary>
-        public int[] Grouping()
+        public IReadOnlyList<int> Grouping()
         {
             if (!_sccs.Any()) Resolve();
 

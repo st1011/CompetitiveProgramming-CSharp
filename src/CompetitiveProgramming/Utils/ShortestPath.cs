@@ -53,7 +53,7 @@ namespace CompetitiveProgramming.Utils
         /// <summary>
         /// sから各ノードへの最短経路
         /// </summary>
-        public long[] ShortestPath(int s)
+        public IReadOnlyList<long> ShortestPath(int s)
         {
             for (int i = 0; i < _nodeCount; i++)
             {
@@ -283,7 +283,7 @@ namespace CompetitiveProgramming.Utils
         /// needsDetailがfalse
         /// 負の閉路と接続されている経路情報不定のまま
         /// </remarks>
-        public long[] ShortestPath(int s, bool needsDetail=false)
+        public IReadOnlyList<long> ShortestPath(int s, bool needsDetail=false)
         {
             var E = _edges.Count;
             for (int i = 0; i < _nodes; i++)
@@ -374,11 +374,11 @@ namespace CompetitiveProgramming.Utils
         private const long _inf = long.MaxValue / 3;
 
         // ノード数
-        private readonly int _nodes;
+        private readonly int _nodeCount;
         // 隣接行列
         private readonly long[,] _matrix;
         // 前回の最短経路結果
-        private readonly long[,] _dist;
+        private readonly List<List<long>> _dist;
         // 経路復元用
         private readonly int[,] _next;
 
@@ -390,7 +390,6 @@ namespace CompetitiveProgramming.Utils
         {
             _matrix = new long[v, v];
             _next = new int[v, v];
-            _dist = new long[v, v];
             for (int i = 0; i < v; i++)
             {
                 for (int j = 0; j < v; j++)
@@ -400,8 +399,10 @@ namespace CompetitiveProgramming.Utils
                 }
             }
 
-            _nodes = v;
-            _dist[0, 0] = _inf;
+            _nodeCount = v;
+            _dist = Enumerable.Range(0, v)
+                .Select(_ => Enumerable.Repeat(_inf, v).ToList())
+                .ToList();
         }
 
         /// <summary>
@@ -414,30 +415,37 @@ namespace CompetitiveProgramming.Utils
         /// sから各ノードへの最短経路
         /// 負の閉路がある場合HasNegCycleがtrueになる
         /// </summary>
-        public long[,] ShortestPath()
+        public IReadOnlyList<IReadOnlyList<long>> ShortestPath()
         {
-            Array.Copy(_matrix, _dist, _matrix.Length);
-            HasNegCycle = false;
-
-            for (int i = 0; i < _nodes; i++)
+            for (int i = 0; i < _dist.Count; i++)
             {
-                for (int j = 0; j < _nodes; j++)
+                for (int j = 0; j < _dist[0].Count; j++)
                 {
-                    for (int k = 0; k < _nodes; k++)
-                    {
-                        if (_dist[j, i] == _inf || _dist[i, k] == _inf) continue;
-                        if (_dist[j, k] <= _dist[j, i] + _dist[i, k]) continue;
+                    _dist[i][j] = _matrix[i, j];
+                }
 
-                        _dist[j, k] = _dist[j, i] + _dist[i, k];
+            }
+
+            HasNegCycle = false;
+            for (int i = 0; i < _nodeCount; i++)
+            {
+                for (int j = 0; j < _nodeCount; j++)
+                {
+                    for (int k = 0; k < _nodeCount; k++)
+                    {
+                        if (_dist[j][i] == _inf || _dist[i][k] == _inf) continue;
+                        if (_dist[j][k] <= _dist[j][i] + _dist[i][k]) continue;
+
+                        _dist[j][k] = _dist[j][i] + _dist[i][k];
                         _next[j, k] = _next[j, i];
                     }
                 }
             }
 
             // 負の閉路がある？
-            for (int i = 0; i < _nodes; i++)
+            for (int i = 0; i < _nodeCount; i++)
             {
-                if (_dist[i, i] < 0)
+                if (_dist[i][i] < 0)
                 {
                     HasNegCycle = true;
                     break;
@@ -453,7 +461,7 @@ namespace CompetitiveProgramming.Utils
         /// </summary>
         public IEnumerable<int> RestorePath(int s, int g)
         {
-            if (_dist[0, 0] == _inf) { throw new Exception(); }
+            if (_dist[0][0] == _inf) { throw new InvalidOperationException(); }
             if (!IsConnected(s, g)) { yield break; }
 
             var current = s;
@@ -470,6 +478,6 @@ namespace CompetitiveProgramming.Utils
         /// <summary>
         /// 接続されているか?
         /// </summary>
-        public bool IsConnected(int s, int g) => _dist[s, g] != _inf;
+        public bool IsConnected(int s, int g) => _dist[s][g] != _inf;
     }
 }
