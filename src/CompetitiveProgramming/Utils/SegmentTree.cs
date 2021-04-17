@@ -14,10 +14,30 @@ namespace CompetitiveProgramming.Utils
     /// </remarks>
     public class SegTree<T>
     {
-        private readonly int _nodeCount;
+        // ノードの値
+        public T this[int index]
+        {
+            get { return _nodes[Leaf(index)]; }
+            set { Update(index, value); }
+        }
+        /// <summary>
+        /// データの個数
+        /// </summary>
+        /// <remarks>
+        /// 実際に有効なデータの数
+        /// 2のべき乗にするために追加した個数や葉以外のノードは含まない
+        /// </remarks>
+        public int Count { get; private set; }
+
+        // 木を構成する配列
         private readonly T[] _nodes;
-        private readonly Func<T, T, T> _monoid;
-        private readonly T _ignorableValue;
+        // 葉へのオフセット
+        private readonly int _leafOffset;
+
+        // 二項演算関数
+        private readonly Func<T, T, T> _operation;
+        // 単位元
+        private readonly T _identity;
 
         /// <summary>
         /// MinQueryの場合: (n, Math.Min, int.MaxValue)
@@ -25,110 +45,155 @@ namespace CompetitiveProgramming.Utils
         /// SumQueryの場合: (n, (x,y)=> x+y, 0)
         /// </summary>
         /// <param name="n">ノード数</param>
-        /// <param name="monoid">モノイド</param>
-        /// <param name="initValue">初期値</param>
-        /// <param name="ignorableValue">無視できる値(MinQueryならMaxValueとか)</param>
-        public SegTree(int n, Func<T, T, T> monoid, T initValue, T ignorableValue)
+        /// <param name="operation">二項演算関数</param>
+        /// <param name="identity">単位元</param>
+        public SegTree(int n, Func<T, T, T> operation, T identity)
         {
+            Count = n;
+
             // 2のべき乗まで切り上げる
-            _nodeCount = 1;
-            while (_nodeCount < n) _nodeCount *= 2;
+            _leafOffset = 1;
+            while (_leafOffset < n) _leafOffset *= 2;
 
-            _monoid = monoid;
-            _ignorableValue = ignorableValue;
+            _operation = operation;
+            _identity = identity;
 
-            _nodes = Enumerable.Repeat(initValue, 2 * _nodeCount - 1).ToArray();
+            _nodes = Enumerable.Repeat(identity, 2 * _leafOffset - 1).ToArray();
         }
 
         /// <summary>
         /// 初期値付きの初期化
         /// </summary>
-        /// <param name="ie"></param>
-        /// <param name="monoid"></param>
-        /// <param name="ignorableValue"></param>
-        public SegTree(IReadOnlyList<T> ie, Func<T, T, T> monoid, T ignorableValue)
-            : this(ie?.Count ?? 0, monoid, ignorableValue, ignorableValue)
+        /// <param name="list">初期値のリスト</param>
+        /// <param name="operation">二項演算関数</param>
+        /// <param name="identity">単位元</param>
+        public SegTree(IReadOnlyList<T> list, Func<T, T, T> operation, T identity)
+            : this(list.Count, operation, identity)
         {
-            var n = ie.Count;
-
             // 実データの上書き
-            for (int i = 0; i < n; i++)
+            for (int i = 0; i < Count; i++)
             {
-                _nodes[i + _nodeCount - 1] = ie.ElementAt(i);
+                _nodes[i + _leafOffset - 1] = list[i];
             }
 
             // 実データ以外の箇所を更新していく
-            for (int i = _nodeCount - 2; i >= 0; i--)
+            for (int i = Leaf(0) - 1; i >= 0; i--)
             {
-                _nodes[i] = _monoid(_nodes[2 * i + 1], _nodes[2 * i + 2]);
+                int l = Left(i);
+                int r = Right(i);
+                _nodes[i] = _operation(_nodes[l], _nodes[r]);
             }
         }
 
         /// <summary>
         /// index番目の要素をvに変更
         /// </summary>
-        /// <param name="index">index(0-based)</param>
+        /// <param name="index">index</param>
         /// <param name="v">更新する値</param>
         public void Update(int index, T v)
         {
-            // 該当の最下段index
-            index += _nodeCount - 1;
+            // 木内部のindexに変換
+            index = Leaf(index);
 
             _nodes[index] = v;
             while (index > 0)
             {
                 // 親ノードを一つずつ更新していく
-                index = (index - 1) / 2;
-                _nodes[index] = _monoid(_nodes[2 * index + 1], _nodes[2 * index + 2]);
+                index = Parent(index);
+                var l = Left(index);
+                var r = Right(index);
+                _nodes[index] = _operation(_nodes[l], _nodes[r]);
             }
         }
 
+#if false
+            /// <summary>
+            /// [a,b)の演算結果を求める
+            /// </summary>
+            /// <param name="a">要求区間の開始 [a</param>
+            /// <param name="b">要求区間の終了 b)</param>
+            /// <param name="index">着目しているノードのindex</param>
+            /// <param name="l">探索区間の開始 [l</param>
+            /// <param name="r">探索区間の終了 r)</param>
+            /// <returns></returns>
+            /// <remarks>
+            /// トップダウンで探す
+            /// </remarks>
+            private T Find(int a, int b, int index, int l, int r)
+            {
+                if (b <= l || a >= r)
+                {
+                    // 対象区間が要求区間外
+                    return _identity;
+                }
+                if (a <= l && b >= r)
+                {
+                    // 対象区間が要求区間に内包されている
+                    return _nodes[index];
+                }
+
+                // 対象区間の一部が要求区間
+                int middle = (l + r) / 2;
+                var vl = Find(a, b, Left(index), l, middle);
+                var vr = Find(a, b, Right(index), middle, r);
+
+                return _operation(vl, vr);
+            }
+
+            /// <summary>
+            /// [a,b)の演算結果を求める
+            /// </summary>
+            /// <param name="a">要求区間の開始 [a</param>
+            /// <param name="b">要求区間の終了 b)</param>
+            /// <returns></returns>
+            public T Find(int a, int b)
+                => Find(a, b, 0, 0, _leafOffset);
+
+#else
+
         /// <summary>
-        /// [b,e)の演算結果を求める
+        /// [a,b)の演算結果を求める
         /// </summary>
-        /// <param name="b"></param>
-        /// <param name="e"></param>
-        /// <param name="k">index(0-based)</param>
-        /// <param name="l">現在の対象区間 [l,</param>
-        /// <param name="r">現在の対象区間 ,r)</param>
+        /// <param name="a">要求区間の開始 [a</param>
+        /// <param name="b">要求区間の終了 b)</param>
         /// <returns></returns>
-        private T Find(int b, int e, int k, int l, int r)
+        /// <remarks>
+        /// ボトムアップで探す
+        /// 定数倍の範囲でこっちの方が早い
+        /// </remarks>
+        public T Find(int a, int b)
         {
-            if (e <= l || b >= r)
+            T y = _identity;
+
+            a = Leaf(a);
+            b = Leaf(b);
+            while (a < b)
             {
-                // 対象区間が要求区間外
-                return _ignorableValue;
-            }
-            if (b <= l && e >= r)
-            {
-                // 対象区間が要求区間に内包されている
-                return _nodes[k];
+                if ((a & 1) == 0)
+                {
+                    y = _operation(y, _nodes[a]);
+                }
+                if ((b & 1) == 0)
+                {
+                    y = _operation(y, _nodes[b - 1]);
+                }
+
+                a = a / 2;
+                b = Parent(b);
             }
 
-            // 対象区間の一部が要求区間
-            var vl = Find(b, e, 2 * k + 1, l, (l + r) / 2);
-            var vr = Find(b, e, 2 * k + 2, (l + r) / 2, r);
-
-            return _monoid(vl, vr);
+            return y;
         }
+#endif
 
-        /// <summary>
-        /// [b,e)の演算結果を求める
-        /// </summary>
-        public T Find(int b, int e)
-            => Find(b, e, 0, 0, _nodeCount);
-
-        /// <summary>
-        /// index番目の要素の取得
-        /// </summary>
-        public T Peek(int index)
-            => _nodes[index + _nodeCount - 1];
-
-        // メモ
-        // (k-1)/2が親ノード
-        // k*2+(1 or 2)が子ノード
-        // 最下段が実際のデータを表していて、それより上にはN-2ノードがある
-        // よって、k+N-1で最下段ノード（実際のノード）を指す
+        // ノード左側の子
+        private int Left(int index) => index * 2 + 1;
+        // ノード右側の子
+        private int Right(int index) => index * 2 + 2;
+        // ノードの親
+        private int Parent(int index) => (index - 1) / 2;
+        // 葉
+        private int Leaf(int index) => index + _leafOffset - 1;
     }
 
     /// <summary>
