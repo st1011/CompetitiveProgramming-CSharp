@@ -18,21 +18,22 @@ namespace CompetitiveProgramming.Utils
         private readonly List<T> _heap;
         private readonly Comparison<T> _comparer;
 
-        public PriorityQueue(int capacity, Comparison<T> comparer)
+        public PriorityQueue(int capacity, Comparison<T> comparison, bool ascending = false)
         {
             _heap = new List<T>(capacity);
-            _comparer = comparer;
+            if (ascending)
+            {
+                _comparer = (x, y) => comparison(y, x);
+            }
+            else
+            {
+                _comparer = (x, y) => comparison(x, y);
+            }
         }
 
-        public PriorityQueue() : this(_defaultCapacity) { }
-        public PriorityQueue(int capacity) : this(capacity, Comparer<T>.Default.Compare) { }
-        public PriorityQueue(Comparison<T> comparer) : this(_defaultCapacity, comparer) { }
-
-        public static PriorityQueue<T> CreateMinPriorityQueue(int capacity)
-            => new PriorityQueue<T>(capacity, (x, y) => -Comparer<T>.Default.Compare(x, y));
-
-        public static PriorityQueue<T> CreateMinPriorityQueue()
-            => CreateMinPriorityQueue(_defaultCapacity);
+        public PriorityQueue(int capacity, bool ascending = false) : this(capacity, Comparer<T>.Default.Compare, ascending) { }
+        public PriorityQueue(bool ascending = false) : this(_defaultCapacity, ascending) { }
+        public PriorityQueue(Comparison<T> comparison) : this(_defaultCapacity, comparison) { }
 
         /// <summary>
         /// 要素追加
