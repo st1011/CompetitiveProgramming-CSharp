@@ -20,6 +20,7 @@ namespace CompetitiveProgramming.Utils
             get { return _nodes[Leaf(index)]; }
             set { Update(index, value); }
         }
+
         /// <summary>
         /// データの個数
         /// </summary>
@@ -34,7 +35,7 @@ namespace CompetitiveProgramming.Utils
         // 葉へのオフセット
         private readonly int _leafOffset;
 
-        // 二項演算関数
+        // 結合則を満たす二項演算関数
         private readonly Func<T, T, T> _operation;
         // 単位元
         private readonly T _identity;
@@ -45,7 +46,7 @@ namespace CompetitiveProgramming.Utils
         /// SumQueryの場合: (n, (x,y)=> x+y, 0)
         /// </summary>
         /// <param name="n">ノード数</param>
-        /// <param name="operation">二項演算関数</param>
+        /// <param name="operation">結合則を満たす二項演算関数</param>
         /// <param name="identity">単位元</param>
         public SegTree(int n, Func<T, T, T> operation, T identity)
         {
